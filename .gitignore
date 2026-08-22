@@ -1,0 +1,20 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+
+# Dados e artefatos locais (mantemos apenas documentação/exemplos)
+data/raw/
+data/interim/
+data/processed/*
+!data/processed/.gitkeep
+artifacts/
+checkpoints/
+*.pt
+*.pth
+
+# Notebooks e sistema
+.ipynb_checkpoints/
+.DS_Store
+

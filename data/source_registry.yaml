@@ -1,0 +1,155 @@
+revision_date: "2026-08-22"
+sources:
+  - id: nellore_beef_cattle_uav_longitudinal_public
+    name: NelloreBeefCattleDataset longitudinal public archive
+    country: Brazil
+    breed: nellore
+    priority: P1
+    acquisition: dorsal_rgb_uav
+    primary_use: detection_segmentation_and_longitudinal_morphology
+    scale:
+      archive_bytes: 9683307424
+      archive_compressed_payload_bytes: 9682881130
+      archive_uncompressed_bytes: 9707030610
+      archive_files: 1647
+      archive_directories: 69
+      uav_images: 904
+      flights: 12
+      altitude_m: 15
+      monitoring_days: 112
+      detection_images: 232
+      detection_labelme_json: 232
+      detection_yolo_labels: 232
+      feed_bunk_images: 23
+      feed_bunk_labelme_json: 23
+      raw_images_by_session:
+        "2024-07-10": 213
+        "2024-07-20": 65
+        "2024-07-31": 62
+        "2024-08-11": 57
+        "2024-08-21": 50
+        "2024-08-31": 84
+        "2024-09-21": 79
+        "2024-09-28": 83
+        "2024-10-05": 81
+        "2024-10-12": 38
+        "2024-10-19": 38
+        "2024-10-27": 54
+      detection_split:
+        train: 97
+        validation: 47
+        test: 88
+    classes: [cattle-back, cattle-head, Cocho]
+    weight_label_status: absent_in_public_archive
+    persistent_animal_id_status: absent_in_public_archive
+    access: public_download_link
+    dataset_license: not_confirmed
+    status: audited_auxiliary_only
+    archive_provenance:
+      audited_at: "2026-08-22"
+      last_modified_header: "2026-07-08"
+      etag: '"2412b8ba0-6560f371b9ba4"'
+      method: remote_zip_central_directory_and_selected_entry_ranges
+      full_payload_checksum: not_computed
+    urls:
+      repository: https://github.com/EvertonTetila/NelloreBeefCattleDataset
+      article: https://doi.org/10.1016/j.compag.2026.111559
+    caveats:
+      - The archive has no image-to-animal-to-weight mapping.
+      - No explicit dataset license file was found in the archive.
+      - The archive has 232 detection images; the article reports 370 annotations.
+      - Do not use this archive to supervise weight regression.
+
+  - id: nellore_uav_weight_workshop_2025
+    name: Nellore UAV weight-estimation study reported in 2025
+    country: Brazil
+    breed: nellore
+    priority: P0
+    acquisition: dorsal_rgb_uav
+    primary_use: candidate_weight_regression
+    scale:
+      animals: 110
+      samples_approx: 10000
+      flights: 13
+      altitude_m: 10
+    weight_label_status: reported_in_publication_files_not_audited
+    access: dataset_files_not_located
+    dataset_license: not_confirmed
+    status: source_resolution_pending
+    url: https://www.alice.cnptia.embrapa.br/alice/handle/doc/1185904
+    caveats:
+      - Do not assume this is the same artifact as the public longitudinal ZIP.
+      - Obtain identifiers, weight mapping, files, and terms before regression use.
+
+  - id: unesp_nellore_kinect_weight
+    name: UNESP Nellore biometric 3D images
+    country: Brazil
+    breed: nellore
+    priority: P0
+    acquisition: top_rgb_infrared_depth_kinect_1473
+    primary_use: weight_regression
+    animals: 450
+    frames_per_animal_captured: 10
+    selected_frames_per_animal_in_published_analysis: 1
+    body_weight_range_kg: [359, 665]
+    scale_accuracy_kg: 0.5
+    weight_label_status: confirmed_in_publication
+    access: request_corresponding_author
+    dataset_license: request_with_data
+    status: request_deferred_by_project_owner
+    contact: otavio.machado@unesp.br
+    urls:
+      article: https://pmc.ncbi.nlm.nih.gov/articles/PMC10215216/
+      thesis: https://repositorio.unesp.br/bitstreams/248a6fbe-d5d0-42b9-82e8-97dbb48f956c/download
+    caveats:
+      - Abstract says 1350 observations; methods support 450 unique animals.
+      - Article CC BY 4.0 does not automatically license the dataset files.
+
+  - id: roboflow_nelore_instance_segmentation
+    name: Nelore Instance Segmentation
+    country: Brazil
+    breed: nellore
+    priority: P1
+    acquisition: rgb
+    primary_use: anatomical_instance_segmentation
+    images: 323
+    classes: [head, hump, neck, posterior, rump, top_line]
+    weight_label_status: absent_or_not_identified
+    access: public
+    dataset_license: CC_BY_4_0_declared
+    status: auxiliary_only
+    url: https://universe.roboflow.com/henriques-workspace-lhcrk/nelore-instance-segmentation
+
+  - id: embrapa_nelore_face_identification
+    name: Embrapa Nelore facial identification dataset
+    country: Brazil
+    breed: nellore
+    priority: P2
+    acquisition: face_rgb_gopro5
+    primary_use: animal_identification
+    animals: 47
+    images: 2210
+    sex_distribution:
+      male: 20
+      female: 27
+    weight_label_status: absent
+    access: confirm_with_authors
+    dataset_license: not_confirmed
+    status: auxiliary_only
+    urls:
+      article: https://www.mdpi.com/2624-7402/6/3/169
+      embrapa_document: https://ainfo.cnptia.embrapa.br/digital/bitstream/doc/1169934/1/Reconhecimento-facial-de-bovinos-da-raca-Nelore-por-meio-de-visao.pdf
+
+  - id: wikimedia_commons_nelore
+    name: Wikimedia Commons Nelore category
+    country: multiple
+    breed: nellore
+    priority: P3
+    acquisition: heterogeneous_rgb
+    primary_use: detection_and_visual_diversity
+    files_at_revision: 43
+    weight_label_status: absent
+    access: public
+    dataset_license: verify_per_file
+    status: auxiliary_only
+    url: https://commons.wikimedia.org/wiki/Category:Nelore

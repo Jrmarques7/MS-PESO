@@ -1,0 +1,4 @@
+image_path,animal_id,event_id,weight_kg,view,breed,sex,farm_id,quality
+raw/example/cow_001_left.jpg,cow_001,event_001,412.5,left,nelore,male,farm_01,accepted
+raw/example/cow_002_left.jpg,cow_002,event_002,387.0,left,nelore,male,farm_01,accepted
+
