@@ -117,9 +117,53 @@ suficiente para uso em campo.
 Nos 18 animais com pelo menos 350 kg, o A7 obtém MAE de 21,20 kg e viés de
 -0,84 kg. Na faixa abaixo de 350 kg, o MAE permanece muito alto (134,76 kg),
 praticamente igual ao B2; não há dados suficientes para resolver essa faixa
-apenas por reamostragem. O A7 é promovido pelo erro global e pela melhora nos
-animais de 500 kg ou mais, mas o B2 deve ser preservado como referência de
-menor viés global.
+apenas por reamostragem.
+
+### Comparação pareada B2 × A7
+
+Foram executadas 10.000 reamostragens bootstrap pareadas dos mesmos 20 animais,
+com seed 42. A diferença de MAE de A7 menos B2 foi de -1,66 kg, com IC95% de
+-6,62 a +3,06 kg e probabilidade bootstrap de A7 ter MAE menor de 74,2%. Para
+MAPE, a diferença foi de -0,27 ponto percentual, com IC95% de -1,28 a +0,71.
+
+Como os intervalos pareados cruzam zero, a vantagem pontual do A7 não está
+estatisticamente sustentada. O B2 permanece a referência principal por ser mais
+simples e apresentar menor viés global. A avaliação seguinte verifica a
+estabilidade dessa conclusão em outras seeds.
+
+A comparação pode ser reproduzida com:
+
+```bash
+python -m ms_peso.compare_models \
+  --reference artifacts/efficientnet_b0_rgb/predictions_test.csv \
+  --candidate artifacts/efficientnet_b0_balanced/predictions_test.csv \
+  --reference-label B2-CowDB-001 \
+  --candidate-label A7-CowDB-001 \
+  --output-dir artifacts/comparison_b2_a7 \
+  --iterations 10000 \
+  --seed 42
+```
+
+### Estabilidade em três seeds
+
+B2 e A7 foram repetidos com seeds 42, 43 e 44, sem alterar a divisão dos
+animais. Os resultados abaixo mostram média e desvio-padrão amostral:
+
+| Métrica | B2 uniforme | A7 balanceado | Diferença A7 − B2 |
+|---|---:|---:|---:|
+| MAE | 32,10 ± 2,43 kg | 36,03 ± 6,68 kg | +3,92 kg |
+| RMSE | 49,11 ± 4,36 kg | 53,96 ± 6,61 kg | +4,85 kg |
+| MAPE | 8,84 ± 0,73% | 9,63 ± 1,12% | +0,79 p.p. |
+| Viés | +7,05 ± 2,29 kg | +5,69 ± 11,72 kg | -1,36 kg |
+| R² | 0,57 ± 0,07 | 0,47 ± 0,13 | -0,09 |
+
+A seed 43 do B2 produziu o melhor resultado isolado (MAE de 29,44 kg), mas a
+comparação usa a média das três execuções. O A7 piora o erro médio e apresenta
+instabilidade substancialmente maior; portanto ele não é promovido. O B2 com
+amostragem uniforme permanece o baseline visual oficial.
+
+O resumo pode ser reproduzido com `python -m ms_peso.summarize_runs`, passando
+os três arquivos `metrics.json` de cada estratégia.
 
 ## Ablações previstas
 

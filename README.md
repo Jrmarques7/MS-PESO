@@ -50,10 +50,16 @@ Os critérios completos estão em
 - [x] Estrutura e metadados do CowDB auditados.
 - [x] ZIP público longitudinal de Nelore/UFGD auditado sem download integral.
 - [x] Inventariador SRP para o dataset UAV de Nelore implementado.
+- [x] Literatura UAV brasileira revisada: fonte 3D de 2026 priorizada e
+  inconsistência da disponibilidade anunciada em 2025 documentada.
 - [x] CowDB baixado e manifesto lateral validado com 154 animais.
 - [x] Baseline B0 da média executado sobre o conjunto de teste.
 - [x] ResNet18 e EfficientNet-B0 treinadas em GPU sobre a mesma divisão CowDB.
-- [x] EfficientNet-B0 balanceada promoveu o baseline visual para MAE de 32,55 kg.
+- [x] EfficientNet-B0 atingiu MAPE de 9,39% e permanece a referência visual.
+- [x] Variante balanceada atingiu MAE pontual de 32,55 kg, sem superioridade
+  estatística confirmada no teste atual.
+- [x] Três seeds confirmaram o B2 uniforme como mais estável: MAE médio de
+  32,10 ± 2,43 kg contra 36,03 ± 6,68 kg da variante balanceada.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -158,7 +164,8 @@ O baseline EfficientNet-B0 com amostragem uniforme é reproduzido com:
 python -m ms_peso.train --config configs/efficientnet_b0_rgb.yaml
 ```
 
-A variante com amostragem moderada por faixa reduziu o MAE para 32,55 kg:
+A variante experimental com amostragem moderada por faixa obteve MAE pontual
+de 32,55 kg:
 
 ```bash
 python -m ms_peso.train --config configs/efficientnet_b0_balanced.yaml
@@ -184,6 +191,9 @@ Para o domínio final, priorizamos fontes brasileiras de Nelore:
   detecção/segmentação, sem peso ou `animal_id` persistente;
 - [UNESP — imagens 3D e peso](https://pmc.ncbi.nlm.nih.gov/articles/PMC10215216/):
   450 animais Nelore; dados mediante solicitação, que será feita posteriormente;
+- [Embrapa/UFGD — nuvem de pontos UAV e peso](https://www.alice.cnptia.embrapa.br/alice/handle/doc/1187153):
+  estudo de 2026 com pesagem no dia do voo e RMSE relatado de 8,35 kg; dados e
+  tamanho final da avaliação precisam ser solicitados;
 - [Nelore Instance Segmentation](https://universe.roboflow.com/henriques-workspace-lhcrk/nelore-instance-segmentation):
   fonte auxiliar para segmentação, sem peso identificado.
 

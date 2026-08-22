@@ -28,15 +28,21 @@ from ms_peso.sampling import inverse_frequency_weights
 from ms_peso.training import fit_model
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Treina o baseline RGB do MS-PESO.")
     parser.add_argument("--config", default="configs/baseline_rgb.yaml")
-    return parser.parse_args()
+    parser.add_argument("--seed", type=int)
+    parser.add_argument("--output-dir", type=Path)
+    return parser.parse_args(args)
 
 
 def main() -> None:
     args = parse_args()
     config = load_yaml_config(args.config)
+    if args.seed is not None:
+        config["project"]["seed"] = args.seed
+    if args.output_dir is not None:
+        config["output"]["directory"] = str(args.output_dir)
     seed = int(config["project"]["seed"])
     set_global_seed(seed)
 
@@ -174,6 +180,8 @@ def main() -> None:
     )
     report = {
         "device": str(device),
+        "seed": seed,
+        "architecture": model_config["architecture"],
         "best_epoch": fit_result.best_epoch,
         "number_of_animals": {
             split: len({row["animal_id"] for row in split_rows[split]})
