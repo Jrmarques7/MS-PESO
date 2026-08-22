@@ -9,7 +9,7 @@ from statistics import fmean, pstdev
 import torch
 from torch import nn
 from torch.optim import AdamW
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, WeightedRandomSampler
 
 from ms_peso.artifacts import save_checkpoint, save_json, save_predictions
 from ms_peso.config import load_yaml_config
@@ -24,6 +24,7 @@ from ms_peso.manifest import (
 from ms_peso.metrics import regression_metrics
 from ms_peso.model import build_model
 from ms_peso.reproducibility import set_global_seed
+from ms_peso.sampling import inverse_frequency_weights
 from ms_peso.training import fit_model
 
 
@@ -99,16 +100,33 @@ def main() -> None:
         )
         for split in ("train", "val", "test")
     }
-    loaders = {
-        split: DataLoader(
-            datasets[split],
+    sampling_config = data_config.get("sampling")
+    train_sampler = None
+    if sampling_config:
+        if sampling_config["strategy"] != "inverse_weight_band":
+            raise ValueError("Estratégia de amostragem desconhecida")
+        sample_weights = inverse_frequency_weights(
+            train_weights,
+            boundaries=[float(value) for value in sampling_config["boundaries_kg"]],
+            power=float(sampling_config["power"]),
+        )
+        train_sampler = WeightedRandomSampler(
+            sample_weights,
+            num_samples=len(sample_weights),
+            replacement=True,
+            generator=torch.Generator().manual_seed(seed),
+        )
+    loaders = {}
+    for split, dataset in datasets.items():
+        sampler = train_sampler if split == "train" else None
+        loaders[split] = DataLoader(
+            dataset,
             batch_size=int(data_config["batch_size"]),
-            shuffle=split == "train",
+            shuffle=split == "train" and sampler is None,
+            sampler=sampler,
             num_workers=int(data_config["num_workers"]),
             pin_memory=torch.cuda.is_available(),
         )
-        for split in datasets
-    }
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model_config = config["model"]
@@ -162,6 +180,7 @@ def main() -> None:
             for split in split_rows
         },
         "number_of_images": {split: len(split_rows[split]) for split in split_rows},
+        "sampling": sampling_config or {"strategy": "uniform"},
         "model": model_metrics,
         "mean_baseline": baseline_metrics,
         "history": fit_result.history,

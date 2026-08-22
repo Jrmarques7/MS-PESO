@@ -53,7 +53,7 @@ Os critérios completos estão em
 - [x] CowDB baixado e manifesto lateral validado com 154 animais.
 - [x] Baseline B0 da média executado sobre o conjunto de teste.
 - [x] ResNet18 e EfficientNet-B0 treinadas em GPU sobre a mesma divisão CowDB.
-- [x] EfficientNet-B0 promoveu o baseline visual para MAE de 34,21 kg.
+- [x] EfficientNet-B0 balanceada promoveu o baseline visual para MAE de 32,55 kg.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -152,11 +152,16 @@ O treinamento grava em `artifacts/baseline_rgb/`:
 - `predictions_test.csv`: peso real e estimado por amostra;
 - `resolved_manifest.csv`: divisão efetivamente usada.
 
-O baseline EfficientNet-B0, atualmente o melhor modelo visual, é reproduzido
-com:
+O baseline EfficientNet-B0 com amostragem uniforme é reproduzido com:
 
 ```bash
 python -m ms_peso.train --config configs/efficientnet_b0_rgb.yaml
+```
+
+A variante com amostragem moderada por faixa reduziu o MAE para 32,55 kg:
+
+```bash
+python -m ms_peso.train --config configs/efficientnet_b0_balanced.yaml
 ```
 
 ## Documentos do projeto

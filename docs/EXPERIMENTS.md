@@ -98,6 +98,29 @@ superestimação dos dois animais abaixo de 350 kg, mas ainda apresenta MAE de
 500 kg ou mais. B2 passa a ser o melhor baseline visual, sem evidência ainda
 suficiente para uso em campo.
 
+### A7-CowDB-001 — amostragem balanceada moderada
+
+- data: 2026-08-22;
+- modelo: EfficientNet-B0 e mesma divisão de B2;
+- mudança isolada: amostragem com reposição pela raiz quadrada do inverso da
+  frequência nas faixas `<350`, `350–399`, `400–449`, `450–499` e `≥500 kg`;
+- melhor época de validação: 23; treinamento encerrado na época 30.
+
+| Métrica | A7 | B2 | Variação de A7 |
+|---|---:|---:|---:|
+| MAE | 32,55 kg | 34,21 kg | -4,9% |
+| RMSE | 50,60 kg | 51,06 kg | -0,9% |
+| MAPE | 9,12% | 9,39% | -2,9% |
+| Viés médio | +12,72 kg | +7,07 kg | pior |
+| R² | 0,542 | 0,534 | melhor |
+
+Nos 18 animais com pelo menos 350 kg, o A7 obtém MAE de 21,20 kg e viés de
+-0,84 kg. Na faixa abaixo de 350 kg, o MAE permanece muito alto (134,76 kg),
+praticamente igual ao B2; não há dados suficientes para resolver essa faixa
+apenas por reamostragem. O A7 é promovido pelo erro global e pela melhora nos
+animais de 500 kg ou mais, mas o B2 deve ser preservado como referência de
+menor viés global.
+
 ## Ablações previstas
 
 | ID | Mudança em relação a B1 |
@@ -108,6 +131,7 @@ suficiente para uso em campo.
 | A4 | metadados: raça, sexo e idade |
 | A5 | fusão lateral + traseira/superior |
 | A6 | RGB + profundidade |
+| A7 | amostragem moderada por faixa de peso |
 
 ## Treinamento inicial
 
