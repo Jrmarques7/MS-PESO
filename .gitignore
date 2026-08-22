@@ -1,6 +1,7 @@
 .venv/
 __pycache__/
 *.py[cod]
+*.egg-info/
 .pytest_cache/
 .coverage
 
@@ -11,6 +12,7 @@ data/processed/*
 !data/processed/.gitkeep
 artifacts/
 checkpoints/
+work/
 *.pt
 *.pth
 

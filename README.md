@@ -52,7 +52,8 @@ Os critérios completos estão em
 - [x] Inventariador SRP para o dataset UAV de Nelore implementado.
 - [x] CowDB baixado e manifesto lateral validado com 154 animais.
 - [x] Baseline B0 da média executado sobre o conjunto de teste.
-- [ ] Primeiro treinamento executado no Colab/GPU.
+- [x] ResNet18 e EfficientNet-B0 treinadas em GPU sobre a mesma divisão CowDB.
+- [x] EfficientNet-B0 promoveu o baseline visual para MAE de 34,21 kg.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -150,6 +151,13 @@ O treinamento grava em `artifacts/baseline_rgb/`:
 - `metrics.json`: MAE, RMSE, MAPE e R²;
 - `predictions_test.csv`: peso real e estimado por amostra;
 - `resolved_manifest.csv`: divisão efetivamente usada.
+
+O baseline EfficientNet-B0, atualmente o melhor modelo visual, é reproduzido
+com:
+
+```bash
+python -m ms_peso.train --config configs/efficientnet_b0_rgb.yaml
+```
 
 ## Documentos do projeto
 
