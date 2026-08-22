@@ -4,7 +4,9 @@ import torch
 from ms_peso.model import build_model
 
 
-@pytest.mark.parametrize("architecture", ["resnet18", "efficientnet_b0"])
+@pytest.mark.parametrize(
+    "architecture", ["resnet18", "efficientnet_b0", "convnext_tiny"]
+)
 def test_model_outputs_one_value_per_image(architecture: str) -> None:
     model = build_model(architecture, pretrained=False)
 

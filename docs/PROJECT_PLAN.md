@@ -72,7 +72,10 @@ R² será relatado, mas nunca utilizado sozinho como critério de sucesso.
 ### M1 — Reprodução pública
 
 - manter registrado o ZIP longitudinal auditado como fonte auxiliar, sem peso;
-- localizar os arquivos da base UAV de peso de 2025, distinta do ZIP público;
+- solicitar os dados UAV/SfM de peso de 2026 e confirmar o total efetivamente
+  avaliado após os filtros de postura e segmentação;
+- pedir aos autores o endereço correto ou a correção da disponibilidade da base
+  UAV de peso de 2025, pois o link público encontrado leva ao ZIP sem pesos;
 - preparar a solicitação à UNESP, cujo envio será feito posteriormente pelo
   responsável do projeto;
 - manter CowDB como validação técnica enquanto os dados Nelore são preparados;

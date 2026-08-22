@@ -12,7 +12,8 @@ supervisionado de regressão.
 | Prioridade | Fonte | Uso principal | Peso real associado | Acesso |
 |---|---|---|---|---|
 | P0 | UNESP Kinect/3D | regressão de peso Nelore | sim | solicitar aos autores |
-| P0 | Estudo de peso UAV de 2025 | regressão dorsal de Nelore | relatado na publicação; arquivos não localizados | resolver com autores |
+| P0 | Nuvem de pontos UAV de 2026 | regressão 3D de Nelore | sim | solicitar dados e protocolo aos autores |
+| P0 | Estudo de peso UAV de 2025 | regressão dorsal de Nelore | relatado; publicação dos arquivos não reproduzida | esclarecer com autores |
 | P1 | NelloreBeefCattleDataset longitudinal | detecção e morfometria UAV | não no ZIP público | download público |
 | P1 | Nelore Instance Segmentation | segmentação anatômica | não identificado | público, CC BY 4.0 |
 | P2 | Embrapa facial | identificação individual | não | disponibilidade a confirmar/solicitar |
@@ -84,11 +85,49 @@ python -m ms_peso.inspect_nellore_uav \
   --output artifacts/nellore_uav_inventory.json
 ```
 
-O estudo de peso de 2025 permanece como uma fonte P0 separada até localizarmos
-os arquivos com os 110 animais, identificadores e pesagens. Não devemos assumir
-que esses dados estão omitidos dentro do ZIP longitudinal já auditado.
+O estudo de peso de 2025 permanece como uma fonte P0 separada, mas a busca
+deixou de ser apenas "arquivo não localizado". A página pública de datasets do
+autor e a notícia institucional da UFGD apontam para o mesmo repositório GitHub
+já auditado, cujo ZIP contém 904 imagens e nenhum peso. Assim, a afirmação de
+que cerca de 10 mil amostras foram disponibilizadas publicamente não pôde ser
+reproduzida. O próximo passo é pedir aos autores os arquivos corretos ou uma
+correção do endereço; não devemos presumir que os dados estejam ocultos no ZIP.
 
-## 2. UNESP — Kinect/3D com peso real
+## 2. Embrapa/UFGD — nuvem de pontos UAV com peso real (2026)
+
+- Registro Embrapa:
+  <https://www.alice.cnptia.embrapa.br/alice/handle/doc/1187153>
+- Texto completo: <https://www.scitepress.org/publishedPapers/2026/149255/pdf/index.html>
+- DOI: <https://doi.org/10.5220/0014925500004018>
+- Raça/domínio: 70 bovinos Nelore presentes em um confinamento na Fazenda
+  Campanário, Laguna Carapã-MS.
+- Aquisição: aproximadamente 190 imagens nadirais com DJI Phantom 4 Advanced,
+  a 10 m, no mesmo dia da pesagem individual.
+- Modalidade: nuvem de pontos densa reconstruída por Structure from Motion
+  (SfM), segmentação DBSCAN e volume baseado em voxels.
+
+Os animais tinham etiquetas numéricas únicas, e a correspondência entre
+observações aéreas e pesos foi feita manualmente por inspeção visual. O modelo
+linear foi calibrado com apenas sete animais em pé. O artigo relata RMSE de
+6,03 kg nesse pequeno subconjunto e RMSE de 8,35 kg nos animais restantes,
+além de erro relativo médio de 2,02% no corpo do texto (o resumo informa
+aproximadamente 2,29%).
+
+Esse resultado é promissor, mas ainda não é uma referência diretamente
+comparável ao MS-PESO: o artigo não informa claramente quantos dos 70 animais
+passaram pelos filtros finais, aceita somente animais em pé com segmentação
+correta, exigiu refinamento manual de sete segmentos e usa regressão sobre
+volume 3D, enquanto nosso teste atual usa 20 imagens RGB laterais de indivíduos
+Hereford. O número 8,35 kg não deve ser apresentado como uma meta equivalente
+sem reproduzir a avaliação no mesmo protocolo.
+
+Não foi localizada uma seção de disponibilidade dos dados nem um download dos
+arquivos. A licença CC BY-NC-ND 4.0 identificada no artigo cobre a publicação,
+não concede automaticamente uso do dataset. Esta é uma fonte P0 concreta para
+solicitação: imagens originais, nuvem densa, segmentos por animal, etiquetas,
+pesos, lista de exclusões e partição exata de calibração/validação.
+
+## 3. UNESP — Kinect/3D com peso real
 
 - Artigo: <https://pmc.ncbi.nlm.nih.gov/articles/PMC10215216/>
 - DOI: <https://doi.org/10.3390/ani13101679>
@@ -121,7 +160,7 @@ os termos devem constar da resposta dos autores.
 - regra de seleção do melhor frame;
 - termos de uso, publicação e compartilhamento de modelos derivados.
 
-## 3. Nelore Instance Segmentation — Roboflow Universe
+## 4. Nelore Instance Segmentation — Roboflow Universe
 
 - Fonte:
   <https://universe.roboflow.com/henriques-workspace-lhcrk/nelore-instance-segmentation>
@@ -138,7 +177,7 @@ ajudam a regressão. Não deve entrar diretamente como linha de treino com
 Antes de incorporar, registrar versão exportada, autoria/atribuição exigida e
 verificar se todas as imagens de origem são compatíveis com a licença declarada.
 
-## 4. Embrapa — reconhecimento facial de Nelore
+## 5. Embrapa — reconhecimento facial de Nelore
 
 - Artigo:
   <https://www.mdpi.com/2624-7402/6/3/169>
@@ -154,7 +193,7 @@ Não é uma base de peso. Sua contribuição potencial é reconhecimento de
 histórico de pesagens. A disponibilidade dos arquivos e os termos de uso devem
 ser confirmados com os autores antes de planejar integração.
 
-## 5. Wikimedia Commons — categoria Nelore
+## 6. Wikimedia Commons — categoria Nelore
 
 - Fonte: <https://commons.wikimedia.org/wiki/Category:Nelore>
 - 43 arquivos na revisão realizada.
@@ -187,11 +226,13 @@ mesmo split, mesmo quando os pesos e as datas forem diferentes.
 
 ## Próximas ações
 
-1. Executar o inventariador após copiar o ZIP para armazenamento com espaço
+1. Solicitar aos autores os dados e o protocolo completo do estudo de nuvem de
+   pontos de 2026, incluindo o número exato de animais avaliados.
+2. Pedir aos autores a correção ou o endereço efetivo da base de peso de 2025,
+   pois o link público conhecido leva ao ZIP longitudinal sem pesos.
+3. Executar o inventariador após copiar esse ZIP para armazenamento com espaço
    suficiente e extrair a fonte.
-2. Localizar a versão de 2025 com 110 animais, IDs e pesagens, sem confundi-la
-   com o ZIP longitudinal.
-3. Enviar posteriormente a solicitação formal à UNESP com a lista de campos
+4. Enviar posteriormente a solicitação formal à UNESP com a lista de campos
    acima.
-4. Manter as fontes auxiliares fora da regressão até existir
+5. Manter as fontes auxiliares fora da regressão até existir
    uma estratégia experimental específica para cada fonte.

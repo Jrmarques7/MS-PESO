@@ -165,6 +165,43 @@ amostragem uniforme permanece o baseline visual oficial.
 O resumo pode ser reproduzido com `python -m ms_peso.summarize_runs`, passando
 os três arquivos `metrics.json` de cada estratégia.
 
+### B3-CowDB — ConvNeXt-Tiny RGB lateral
+
+- data: 2026-08-22;
+- entrada, divisão, aumentos e hiperparâmetros: iguais ao B2;
+- mudança isolada: arquitetura ConvNeXt-Tiny com pesos ImageNet;
+- seed 42: melhor época de validação 8; encerramento na época 15.
+
+Na seed 42, o B3 obteve MAE de 32,42 kg, RMSE de 55,90 kg, MAPE de 9,42%,
+viés de +11,87 kg e R² de 0,441. O MAE pontual foi 1,80 kg menor que o B2,
+mas o bootstrap pareado de 10.000 iterações produziu IC95% de -8,92 a
++5,48 kg. A melhora não é sustentada; RMSE, MAPE e viés foram piores.
+
+Os dois animais abaixo de 350 kg concentraram os maiores erros do B3, com MAE
+de 151,27 kg nessa faixa. Nos outros 18 animais, o MAE foi 19,21 kg e o viés
+-3,62 kg. Isso reforça que a aparente melhora global não resolve a região rara
+e ainda amplia os erros extremos.
+
+O experimento foi repetido com seeds 42, 43 e 44:
+
+| Métrica | B2 EfficientNet-B0 | B3 ConvNeXt-Tiny | Diferença B3 − B2 |
+|---|---:|---:|---:|
+| MAE | 32,10 ± 2,43 kg | 31,64 ± 2,84 kg | -0,46 kg |
+| RMSE | 49,11 ± 4,36 kg | 55,36 ± 6,07 kg | +6,25 kg |
+| MAPE | 8,84 ± 0,73% | 9,28 ± 0,96% | +0,44 p.p. |
+| Viés | +7,05 ± 2,29 kg | +14,05 ± 2,14 kg | +7,00 kg |
+| R² | 0,57 ± 0,07 | 0,45 ± 0,12 | -0,12 |
+
+O ganho muito pequeno de MAE não compensa a piora consistente das demais
+métricas e dos erros grandes. O B3 não é promovido; B2 permanece o baseline
+visual oficial.
+
+Reprodução da execução principal:
+
+```bash
+python -m ms_peso.train --config configs/convnext_tiny_rgb.yaml
+```
+
 ## Ablações previstas
 
 | ID | Mudança em relação a B1 |

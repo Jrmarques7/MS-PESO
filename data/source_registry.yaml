@@ -72,14 +72,58 @@ sources:
       samples_approx: 10000
       flights: 13
       altitude_m: 10
-    weight_label_status: reported_in_publication_files_not_audited
-    access: dataset_files_not_located
+    weight_label_status: reported_in_publication_not_present_in_linked_archive
+    access: public_claim_not_reproduced_request_authors
     dataset_license: not_confirmed
-    status: source_resolution_pending
-    url: https://www.alice.cnptia.embrapa.br/alice/handle/doc/1185904
+    status: publication_claim_requires_clarification
+    urls:
+      publication: https://www.alice.cnptia.embrapa.br/alice/handle/doc/1185904
+      linked_public_repository: https://github.com/EvertonTetila/NelloreBeefCattleDataset
     caveats:
       - Do not assume this is the same artifact as the public longitudinal ZIP.
+      - Public dataset references found during the audit resolve to the longitudinal ZIP without weights.
       - Obtain identifiers, weight mapping, files, and terms before regression use.
+
+  - id: nellore_uav_dense_point_cloud_weight_2026
+    name: Embrapa UFGD Nellore UAV dense-point-cloud weight study
+    country: Brazil
+    breed: nellore
+    priority: P0
+    acquisition: dorsal_rgb_uav_sfm_dense_point_cloud
+    primary_use: candidate_3d_weight_regression
+    scale:
+      animals_in_study_area: 70
+      retained_animals_after_filters: not_reported
+      calibration_animals: 7
+      validation_animals: not_reported
+      aerial_images_approx: 190
+      altitude_m: 10
+      gsd_mm: 2.96
+      manually_refined_segments: 7
+    camera: DJI_Phantom_4_Advanced
+    weight_label_status: confirmed_same_day_individual_weighing
+    identification_status: unique_numeric_tags_manually_mapped
+    reported_results:
+      calibration_rmse_kg: 6.03
+      remaining_animals_rmse_kg: 8.35
+      remaining_animals_average_relative_error_percent: 2.02
+      abstract_average_relative_error_percent_approx: 2.29
+      average_weight_kg_approx: 360
+    access: request_authors
+    dataset_license: not_confirmed
+    article_license: CC_BY_NC_ND_4_0
+    status: request_required
+    urls:
+      embrapa_record: https://www.alice.cnptia.embrapa.br/alice/handle/doc/1187153
+      full_text: https://www.scitepress.org/publishedPapers/2026/149255/pdf/index.html
+      doi: https://doi.org/10.5220/0014925500004018
+    caveats:
+      - The paper does not clearly report how many of the 70 animals remained after posture and segmentation filters.
+      - Only correctly segmented standing animals were retained.
+      - Seven animals calibrated the linear regression and seven segments required manual refinement.
+      - No public dataset download or data-availability statement was located.
+      - Article licensing does not automatically license the dataset files.
+      - Do not compare the reported RMSE directly with the MS-PESO RGB test.
 
   - id: unesp_nellore_kinect_weight
     name: UNESP Nellore biometric 3D images

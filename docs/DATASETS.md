@@ -10,6 +10,14 @@ estruturado [`data/source_registry.yaml`](../data/source_registry.yaml).
 CowDB permanece como base pública de engenharia para validar o pipeline, mas
 não representa a raça nem as condições brasileiras pretendidas.
 
+O estudo Embrapa/UFGD de 2026 é a fonte UAV brasileira com peso mais concreta
+encontrada até agora: usa aproximadamente 190 imagens para reconstrução 3D no
+mesmo dia da pesagem de um lote com 70 Nelore e relata RMSE de 8,35 kg. Os
+arquivos não foram publicados, o total final de animais avaliados não está
+claro e apenas sete animais calibraram a regressão; por isso, ele entra como
+fonte P0 para solicitação, não como resultado diretamente comparável ao
+baseline RGB atual.
+
 ## NelloreBeefCattleDataset longitudinal
 
 Fonte oficial:
@@ -23,6 +31,11 @@ YOLO/LabelMe de `cattle-back` e `cattle-head`, e 23 pares LabelMe para o cocho.
 Não há peso, `animal_id` persistente, tabela de pesagem nem licença explícita no
 arquivo. Por isso, essa versão é auxiliar e nunca deve ser passada ao importador
 do manifesto de regressão.
+
+A busca pelo conjunto de aproximadamente 10 mil amostras e 110 animais relatado
+no workshop de 2025 chegou ao mesmo repositório público já auditado. A promessa
+de disponibilização não é reproduzível com os arquivos atuais e precisa ser
+esclarecida com os autores.
 
 Após extraí-la em um volume externo com espaço suficiente, valide sua cópia:
 

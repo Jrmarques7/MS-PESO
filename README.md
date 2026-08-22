@@ -60,6 +60,8 @@ Os critérios completos estão em
   estatística confirmada no teste atual.
 - [x] Três seeds confirmaram o B2 uniforme como mais estável: MAE médio de
   32,10 ± 2,43 kg contra 36,03 ± 6,68 kg da variante balanceada.
+- [x] ConvNeXt-Tiny testada em três seeds; não promovida por piorar RMSE,
+  MAPE, viés e R² apesar de MAE médio 0,46 kg menor.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -162,6 +164,12 @@ O baseline EfficientNet-B0 com amostragem uniforme é reproduzido com:
 
 ```bash
 python -m ms_peso.train --config configs/efficientnet_b0_rgb.yaml
+```
+
+A arquitetura ConvNeXt-Tiny também foi avaliada, mas não substituiu o B2:
+
+```bash
+python -m ms_peso.train --config configs/convnext_tiny_rgb.yaml
 ```
 
 A variante experimental com amostragem moderada por faixa obteve MAE pontual
