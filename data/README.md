@@ -15,6 +15,11 @@ imagem por evento e vista. No arquivo `configs/baseline_rgb.yaml`, `image_root`
 é `data`; portanto `raw/...` resolve para `data/raw/...`. Sem `image_root`, um
 caminho relativo é resolvido a partir do diretório do manifesto.
 
+Experimentos multimodais podem incluir `depth_image_path`. A configuração deve
+declarar `depth_image_column: depth_image_path`; nesse caso, o treinamento
+valida e carrega os dois arquivos. O caminho de profundidade é opcional no
+contrato geral e não altera o baseline RGB.
+
 Depois de executar `ms_peso.prepare_manifest`, a coluna `split` terá um dos
 valores `train`, `val` ou `test`.
 

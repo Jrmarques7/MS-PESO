@@ -62,6 +62,8 @@ Os critérios completos estão em
   32,10 ± 2,43 kg contra 36,03 ± 6,68 kg da variante balanceada.
 - [x] ConvNeXt-Tiny testada em três seeds; não promovida por piorar RMSE,
   MAPE, viés e R² apesar de MAE médio 0,46 kg menor.
+- [x] Fusão RGB + profundidade testada; não promovida após piorar o MAE em
+  9,06 kg no bootstrap pareado contra o B2.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -171,6 +173,10 @@ A arquitetura ConvNeXt-Tiny também foi avaliada, mas não substituiu o B2:
 ```bash
 python -m ms_peso.train --config configs/convnext_tiny_rgb.yaml
 ```
+
+O carregador experimental RGB + profundidade pode ser reproduzido com
+`configs/efficientnet_b0_rgb_depth.yaml`. A fusão da cena bruta não superou o
+B2; o próximo uso da profundidade será recorte/segmentação antes da regressão.
 
 A variante experimental com amostragem moderada por faixa obteve MAE pontual
 de 32,55 kg:

@@ -202,6 +202,59 @@ Reprodução da execução principal:
 python -m ms_peso.train --config configs/convnext_tiny_rgb.yaml
 ```
 
+### A6-CowDB-001 — fusão RGB + profundidade
+
+- data: 2026-08-22;
+- entrada: RGB lateral e profundidade de 16 bits sincronizados pelo timestamp;
+- divisão: a mesma de B2, com 109/25/20 animais;
+- RGB: EfficientNet-B0 com pesos ImageNet;
+- profundidade: codificador convolucional pequeno treinado do zero;
+- fusão: características globais antes da regressão, sem presumir alinhamento
+  pixel a pixel entre RGB 1920 × 1080 e profundidade 512 × 424;
+- normalização da profundidade: faixa física fixa de 0 a 8.000 mm;
+- melhor época de validação: 6; encerramento na época 13.
+
+| Métrica | A6 | B2 | Variação de A6 |
+|---|---:|---:|---:|
+| MAE | 43,28 kg | 34,21 kg | +26,5% |
+| RMSE | 59,56 kg | 51,06 kg | +16,6% |
+| MAPE | 11,33% | 9,39% | +20,6% |
+| Viés médio | -3,77 kg | +7,07 kg | menor magnitude |
+| R² | 0,366 | 0,534 | pior |
+
+O bootstrap pareado de 10.000 iterações confirmou a piora: a diferença A6
+menos B2 foi +9,06 kg de MAE, IC95% de +1,31 a +16,81 kg; para RMSE, +8,50
+kg, IC95% de +2,90 a +15,76 kg. Como os intervalos não cruzam zero, esta
+configuração não justifica repetição em outras seeds.
+
+Os dois animais abaixo de 350 kg continuaram concentrando os maiores erros,
+com MAE de 144,60 kg. Nos 18 animais restantes, o A6 teve MAE de 32,02 kg,
+também pior que os 19,21 kg do B3. A profundidade bruta contém a silhueta do
+animal, porém inclui piso, cercas e mediana de aproximadamente 43% de pixels
+inválidos. Estatísticas globais de profundidade apresentaram correlação fraca
+com peso no conjunto completo.
+
+**Decisão:** rejeitar fusão bruta da cena. A próxima tentativa com profundidade
+deve usá-la para recorte/segmentação do bovino ou extrair geometria após remover
+o fundo, mantendo essa transformação separada do regressor.
+
+Reprodução:
+
+```bash
+python -m ms_peso.import_cowdb \
+  --dataset-root data/raw/cowdb \
+  --image-root data \
+  --output data/interim/cowdb_rgb_depth_manifest.csv \
+  --views left \
+  --include-depth
+python -m ms_peso.prepare_manifest \
+  --input data/interim/cowdb_rgb_depth_manifest.csv \
+  --output data/processed/rgb_depth_manifest.csv \
+  --image-root data \
+  --seed 42
+python -m ms_peso.train --config configs/efficientnet_b0_rgb_depth.yaml
+```
+
 ## Ablações previstas
 
 | ID | Mudança em relação a B1 |

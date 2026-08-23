@@ -52,6 +52,9 @@ def create_fake_cowdb(root: Path, number_of_animals: int = 3) -> Path:
             Image.new("RGB", (32, 24), color=(animal_id * 20, 30, 40)).save(
                 directory / f"rgb-12.00.0{animal_id}.png"
             )
+            Image.new("I;16", (16, 12), color=4000).save(
+                directory / f"depth-12.00.0{animal_id}.png"
+            )
     measurements = root / "Manual_measurements.xlsx"
     workbook.save(measurements)
     return measurements
@@ -100,6 +103,42 @@ def test_multiple_views_share_event_and_animal(tmp_path):
     animal_rows = [row for row in rows if row["animal_id"] == "cowdb_001"]
     assert {row["view"] for row in animal_rows} == {"left", "top"}
     assert len({row["event_id"] for row in animal_rows}) == 1
+
+
+def test_includes_synchronized_depth_path(tmp_path):
+    dataset_root = tmp_path / "cowdb"
+    measurements_path = create_fake_cowdb(dataset_root)
+    rows = build_cowdb_manifest_rows(
+        dataset_root,
+        measurements_path,
+        image_root=tmp_path,
+        views=["left"],
+        include_depth=True,
+    )
+
+    assert rows[0]["depth_image_path"].endswith("depth-12.00.01.png")
+    validate_rows(
+        rows,
+        manifest_path=tmp_path / "manifest.csv",
+        image_root=tmp_path,
+        check_images=True,
+        additional_image_columns=("depth_image_path",),
+    )
+
+
+def test_rejects_missing_synchronized_depth(tmp_path):
+    dataset_root = tmp_path / "cowdb"
+    measurements_path = create_fake_cowdb(dataset_root)
+    next((dataset_root / "2" / "raw" / "left").glob("depth-*.png")).unlink()
+
+    with pytest.raises(ValueError, match="Profundidade pareada ausente"):
+        build_cowdb_manifest_rows(
+            dataset_root,
+            measurements_path,
+            image_root=tmp_path,
+            views=["left"],
+            include_depth=True,
+        )
 
 
 def test_rejects_unknown_view(tmp_path):

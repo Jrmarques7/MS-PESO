@@ -67,8 +67,10 @@ Auditoria realizada em 2026-08-22 sobre a árvore `master`:
 A cópia local usada no primeiro manifesto está fixada no commit
 `270f2908de9a6931789400fbea122fe5e8df35b6`. Ela ocupa aproximadamente 5,3 GB.
 
-O importador inicial usa somente `raw/<view>/rgb-*.png`. Profundidade e nuvens
-de pontos ficam reservadas para experimentos posteriores.
+O importador inicial usa somente `raw/<view>/rgb-*.png`. Com
+`--include-depth`, ele também valida o par `depth-*.png` com o mesmo timestamp
+e grava `depth_image_path`; a importação falha se qualquer par estiver ausente.
+As nuvens de pontos ficam reservadas para experimentos posteriores.
 
 ### Licença
 
@@ -98,6 +100,17 @@ python -m ms_peso.import_cowdb \
   --image-root data \
   --output data/interim/cowdb_manifest.csv \
   --views left
+```
+
+Para preparar o manifesto multimodal:
+
+```bash
+python -m ms_peso.import_cowdb \
+  --dataset-root data/raw/cowdb \
+  --image-root data \
+  --output data/interim/cowdb_rgb_depth_manifest.csv \
+  --views left \
+  --include-depth
 ```
 
 O importador lê a grafia original `live weithg`, preserva as medidas corporais

@@ -25,6 +25,11 @@ def parse_args() -> argparse.Namespace:
         "--measurements",
         help="Padrão: <dataset-root>/Manual_measurements.xlsx",
     )
+    parser.add_argument(
+        "--include-depth",
+        action="store_true",
+        help="Inclui o caminho da profundidade sincronizada no manifesto.",
+    )
     return parser.parse_args()
 
 
@@ -41,12 +46,14 @@ def main() -> None:
         measurements_path,
         image_root=args.image_root,
         views=args.views,
+        include_depth=args.include_depth,
     )
     validate_rows(
         rows,
         manifest_path=args.output,
         image_root=args.image_root,
         check_images=True,
+        additional_image_columns=("depth_image_path",) if args.include_depth else (),
     )
     write_manifest(rows, args.output)
 

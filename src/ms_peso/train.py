@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader, WeightedRandomSampler
 
 from ms_peso.artifacts import save_checkpoint, save_json, save_predictions
 from ms_peso.config import load_yaml_config
-from ms_peso.dataset import CattleWeightDataset
+from ms_peso.dataset import CattleWeightDataset, RGBDepthCattleWeightDataset
 from ms_peso.evaluation import evaluate_model
 from ms_peso.manifest import (
     grouped_split,
@@ -47,6 +47,7 @@ def main() -> None:
     set_global_seed(seed)
 
     data_config = config["data"]
+    depth_image_column = data_config.get("depth_image_column")
     manifest_path = Path(data_config["manifest"])
     image_root = data_config.get("image_root")
     rows = read_manifest(manifest_path)
@@ -55,6 +56,7 @@ def main() -> None:
         manifest_path=manifest_path,
         image_root=image_root,
         check_images=True,
+        additional_image_columns=(depth_image_column,) if depth_image_column else (),
     )
 
     selected_view = data_config.get("view")
@@ -94,18 +96,33 @@ def main() -> None:
     if not math.isfinite(target_std) or target_std < 1e-6:
         raise ValueError("O peso no treino precisa ter variação maior que zero.")
 
-    datasets = {
-        split: CattleWeightDataset(
-            split_rows[split],
-            manifest_path=manifest_path,
-            image_root=image_root,
-            image_size=int(data_config["image_size"]),
-            training=split == "train",
-            target_mean=target_mean,
-            target_std=target_std,
-        )
-        for split in ("train", "val", "test")
+    common_dataset_arguments = {
+        "manifest_path": manifest_path,
+        "image_root": image_root,
+        "image_size": int(data_config["image_size"]),
+        "target_mean": target_mean,
+        "target_std": target_std,
     }
+    if depth_image_column:
+        datasets = {
+            split: RGBDepthCattleWeightDataset(
+                split_rows[split],
+                depth_image_column=depth_image_column,
+                depth_max_mm=float(data_config["depth_max_mm"]),
+                training=split == "train",
+                **common_dataset_arguments,
+            )
+            for split in ("train", "val", "test")
+        }
+    else:
+        datasets = {
+            split: CattleWeightDataset(
+                split_rows[split],
+                training=split == "train",
+                **common_dataset_arguments,
+            )
+            for split in ("train", "val", "test")
+        }
     sampling_config = data_config.get("sampling")
     train_sampler = None
     if sampling_config:

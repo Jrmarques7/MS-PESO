@@ -35,16 +35,25 @@ def read_manifest(path: str | Path) -> list[dict[str, str]]:
     return rows
 
 
+def resolve_manifest_path(
+    row: dict[str, str],
+    column: str,
+    manifest_path: str | Path,
+    image_root: str | Path | None = None,
+) -> Path:
+    path = Path(row[column])
+    if path.is_absolute():
+        return path
+    base = Path(image_root) if image_root else Path(manifest_path).parent
+    return (base / path).resolve()
+
+
 def resolve_image_path(
     row: dict[str, str],
     manifest_path: str | Path,
     image_root: str | Path | None = None,
 ) -> Path:
-    path = Path(row["image_path"])
-    if path.is_absolute():
-        return path
-    base = Path(image_root) if image_root else Path(manifest_path).parent
-    return (base / path).resolve()
+    return resolve_manifest_path(row, "image_path", manifest_path, image_root)
 
 
 def validate_rows(
@@ -53,6 +62,7 @@ def validate_rows(
     manifest_path: str | Path | None = None,
     image_root: str | Path | None = None,
     check_images: bool = False,
+    additional_image_columns: Iterable[str] = (),
 ) -> None:
     rows = list(rows)
     if not rows:
@@ -94,21 +104,27 @@ def validate_rows(
         if check_images:
             if manifest_path is None:
                 raise ValueError("manifest_path é obrigatório para verificar imagens")
-            image_path = resolve_image_path(row, manifest_path, image_root)
-            if not image_path.is_file():
-                errors.append(
-                    f"linha {line_number}: imagem não encontrada: {image_path}"
+            for image_column in ("image_path", *additional_image_columns):
+                if not row.get(image_column, "").strip():
+                    errors.append(f"linha {line_number}: {image_column} vazio")
+                    continue
+                image_path = resolve_manifest_path(
+                    row, image_column, manifest_path, image_root
                 )
-            else:
-                try:
-                    from PIL import Image
-
-                    with Image.open(image_path) as image:
-                        image.verify()
-                except Exception as exc:  # noqa: BLE001
+                if not image_path.is_file():
                     errors.append(
-                        f"linha {line_number}: imagem inválida {image_path}: {exc}"
+                        f"linha {line_number}: imagem não encontrada: {image_path}"
                     )
+                else:
+                    try:
+                        from PIL import Image
+
+                        with Image.open(image_path) as image:
+                            image.verify()
+                    except Exception as exc:  # noqa: BLE001
+                        errors.append(
+                            f"linha {line_number}: imagem inválida {image_path}: {exc}"
+                        )
 
     if errors:
         preview = "\n".join(f"- {error}" for error in errors[:20])

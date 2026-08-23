@@ -1,5 +1,21 @@
 # Registro de decisões
 
+## 2026-08-22 — Não fundir a cena de profundidade bruta ao RGB
+
+**Decisão:** rejeitar o A6 de fusão global RGB + profundidade e manter o B2
+RGB como baseline oficial. Não repetir esta configuração em outras seeds.
+
+**Motivo:** no mesmo teste de 20 animais, o A6 piorou o MAE em 9,06 kg e o
+RMSE em 8,50 kg; ambos os intervalos de confiança pareados ficaram inteiramente
+acima de zero. A profundidade contém a silhueta, mas também fundo, estruturas do
+curral e muitos pixels inválidos. A representação aprendida com apenas 109
+animais acrescentou ruído em vez de geometria útil.
+
+**Consequência:** a profundidade será tratada como informação geométrica para
+recorte, máscara ou medidas após remoção do fundo. O carregamento multimodal
+permanece no projeto para experimentos reproduzíveis, mas não será promovido ao
+fluxo principal.
+
 ## 2026-08-22 — Manter EfficientNet-B0 após avaliar ConvNeXt-Tiny
 
 **Decisão:** não promover o B3 ConvNeXt-Tiny. O B2 EfficientNet-B0 com

@@ -126,6 +126,7 @@ def build_cowdb_manifest_rows(
     *,
     image_root: str | Path,
     views: Iterable[str] = ("left",),
+    include_depth: bool = False,
 ) -> list[dict[str, str]]:
     """Compõe medidas e imagens CowDB no contrato de manifesto MS-PESO."""
     measurements = read_cowdb_measurements(measurements_path)
@@ -149,15 +150,34 @@ def build_cowdb_manifest_rows(
         measurement = measurements[source_id]
         animal_id = f"cowdb_{int(source_id):03d}"
         for view, image_path in sorted(images[source_id].items()):
+            depth_path = image_path.with_name(
+                image_path.name.replace("rgb-", "depth-", 1)
+            )
+            if include_depth and not depth_path.is_file():
+                raise ValueError(
+                    f"Profundidade pareada ausente para animal {source_id}, "
+                    f"vista {view}: {depth_path}"
+                )
             try:
                 relative_image_path = image_path.resolve().relative_to(image_base)
+                relative_depth_path = (
+                    depth_path.resolve().relative_to(image_base)
+                    if include_depth
+                    else None
+                )
             except ValueError as exc:
                 raise ValueError(
-                    f"Imagem {image_path} não está dentro de image_root {image_base}."
+                    "Imagem RGB ou profundidade não está dentro de "
+                    f"image_root {image_base}."
                 ) from exc
             rows.append(
                 {
                     "image_path": relative_image_path.as_posix(),
+                    **(
+                        {"depth_image_path": relative_depth_path.as_posix()}
+                        if relative_depth_path is not None
+                        else {}
+                    ),
                     "animal_id": animal_id,
                     "event_id": f"{animal_id}_capture_001",
                     "weight_kg": measurement["weight_kg"],
