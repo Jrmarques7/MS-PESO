@@ -40,6 +40,9 @@ linhas do componente.
 | `test_evaluation.py` | calcular estatísticas finais agrupadas por animal |
 | `commercial_evaluation.py` | congelar entradas e critérios antes do teste |
 | `evaluate_commercial.py` | somente orquestrar a avaliação final protegida |
+| `commercial_model_package.py` | verificar a cadeia do candidato interno |
+| `commercial_inference.py` | estimar peso e intervalo do candidato verificado |
+| `predict_commercial.py` | orquestrar qualidade e inferência comercial interna |
 | `importers/` | converter uma fonte externa para o contrato MS-PESO |
 | futuros módulos de inferência | carregar o artefato e produzir estimativas |
 | futuros módulos de coleta | adquirir imagens e metadados de campo |

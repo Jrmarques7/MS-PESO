@@ -1,0 +1,54 @@
+schema_version: 1
+model_id: ms-peso-commercial-candidate
+model_version: "1"
+status: candidate_unapproved
+production_ready: false
+commercial_use_allowed: false
+commercial_blockers:
+  - O treinamento comercial real ainda não foi executado.
+  - A revisão jurídica dos direitos precisa ser concluída.
+  - A validação externa e a segurança operacional precisam ser aprovadas.
+  - A aprovação humana final ainda não foi registrada.
+architecture: efficientnet_b0
+
+checkpoint:
+  path: ../artifacts/commercial_fit_v001/best_model.pt
+  sha256: REPLACE_WITH_CHECKPOINT_SHA256
+
+calibration:
+  path: ../artifacts/commercial_calibration_v001/calibration.json
+  sha256: REPLACE_WITH_CALIBRATION_REPORT_SHA256
+
+evaluation:
+  path: ../artifacts/commercial_evaluation_v001/final_test_report.json
+  sha256: REPLACE_WITH_FINAL_TEST_REPORT_SHA256
+
+quality_policy:
+  path: ../configs/image_quality.yaml
+  sha256: e54f02fa5e329913f1280c3c88d7af45c2ba3e394204113569e2ffb638e19618
+
+input:
+  modality: rgb
+  view: left
+  image_size: 224
+  color_space: RGB
+  capture_protocol: controlled_single_cattle_full_body
+
+output:
+  point: estimated_weight_kg
+  interval: conformal_prediction_interval_kg
+  unit: kg
+
+domain:
+  dataset: owned_or_expressly_licensed_pilot
+  breed: target_population_to_be_confirmed
+
+limitations:
+  - Pacote interno; não usar em produção ou exploração comercial.
+  - O gate técnico não confirma bovino, raça, pose, corpo inteiro ou domínio.
+  - O intervalo depende da representatividade dos animais de calibração.
+  - Não usar como única fonte para venda, dosagem ou decisões críticas.
+
+model_card:
+  path: ../docs/MODEL_CARD_COMMERCIAL_CANDIDATE.md
+  sha256: cf3747ffdee0885131961a6dce143a07d2b5951667215ce2d52f761583c21f62

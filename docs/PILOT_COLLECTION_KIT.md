@@ -232,6 +232,32 @@ Mesmo uma passagem completa gera apenas recomendação para revisão. Direitos,
 domínio externo, segurança operacional e aprovação humana permanecem
 obrigatórios, e `commercial_use_allowed` continua `false`.
 
+## Montar o pacote de inferência interna
+
+Somente quando o relatório final indicar `technical_review_recommended`, copie
+os hashes reais do checkpoint, da calibração e da avaliação para
+`models/commercial_candidate.yaml`. O descritor também fixa a política de
+qualidade e o model card; qualquer alteração posterior invalida o pacote.
+
+Para executar uma foto lateral em ambiente interno:
+
+```powershell
+python -m ms_peso.predict_commercial `
+  --image caminho/para/foto_lateral.jpg `
+  --package models/commercial_candidate.yaml `
+  --device auto
+```
+
+O gate de resolução, proporção, exposição e nitidez roda antes da carga do
+checkpoint. Uma rejeição retorna peso e intervalo nulos. Uma captura aceita
+retorna estimativa, raio conformal, limites inferior/superior e cobertura-alvo.
+O limite inferior é truncado em zero sem excluir pesos fisicamente possíveis.
+
+Esse pacote é exclusivamente interno e continua bloqueado para exploração
+comercial. Ele não confirma bovino, raça, pose lateral, corpo inteiro, oclusão
+ou domínio validado. Também não contém servidor HTTP: o microsserviço pertence
+à aplicação separada do ponto 7 e consumirá este núcleo apenas no futuro.
+
 ## Gate antes do treinamento
 
 Nenhuma imagem entra no candidato comercial enquanto a auditoria não estiver

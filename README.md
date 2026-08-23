@@ -86,6 +86,7 @@ Os critérios completos estão em
   restrito a treino/validação.
 - [x] Calibração conformal protegida criada por animal, sem acesso ao teste.
 - [x] Avaliação final com recibo único, IC95% e gate técnico implementada.
+- [x] Inferência do candidato interno criada com qualidade e intervalo conformal.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -235,6 +236,23 @@ para cobertura. Uma segunda execução com o mesmo recibo é bloqueada. Mesmo
 quando todos os critérios técnicos passam, a saída recomenda revisão humana e
 mantém `commercial_use_allowed: false`.
 
+Depois de uma avaliação técnica aprovada, os hashes dos três artefatos reais
+podem ser registrados em `models/commercial_candidate.yaml`. A inferência
+interna é executada com:
+
+```bash
+python -m ms_peso.predict_commercial \
+  --image caminho/para/foto_lateral.jpg \
+  --package models/commercial_candidate.yaml
+```
+
+O descritor autentica checkpoint, calibração, avaliação, política de qualidade
+e model card. Imagens rejeitadas não carregam o checkpoint. Imagens aceitas
+recebem peso e intervalo conformal, mas a saída declara explicitamente
+`authorization_status: blocked_pending_mandatory_reviews` e
+`commercial_use_allowed: false`. Esse é o núcleo reutilizável; nenhuma API ou
+microsserviço foi criado neste repositório.
+
 A arquitetura ConvNeXt-Tiny também foi avaliada, mas não substituiu o B2:
 
 ```bash
@@ -332,6 +350,7 @@ python -m ms_peso.train --config configs/efficientnet_b0_balanced.yaml
 - [Execução no Google Colab](docs/COLAB.md)
 - [Princípios de engenharia](docs/ENGINEERING_PRINCIPLES.md)
 - [Model card do B2](docs/MODEL_CARD_B2.md)
+- [Model card do candidato comercial](docs/MODEL_CARD_COMMERCIAL_CANDIDATE.md)
 - [Proveniência e caminho comercial](docs/MODEL_PROVENANCE.md)
 - [Kit de coleta piloto](docs/PILOT_COLLECTION_KIT.md)
 - [Datasets e auditoria](docs/DATASETS.md)

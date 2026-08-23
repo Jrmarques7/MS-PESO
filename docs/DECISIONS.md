@@ -1,5 +1,19 @@
 # Registro de decisões
 
+## 2026-08-23 — Separar inferência interna do futuro microsserviço
+
+**Decisão:** criar um pacote local de candidato que autentica checkpoint,
+calibração, avaliação, política de qualidade e model card, retornando peso e
+intervalo conformal somente após o gate técnico da imagem.
+
+**Motivo:** a lógica científica precisa ser reutilizável e testável sem assumir
+transporte HTTP, autenticação, filas ou infraestrutura da aplicação futura. O
+mesmo pacote também não pode transformar passagem técnica em autorização.
+
+**Consequência:** a saída mantém `commercial_use_allowed: false` e autorização
+bloqueada. O descritor rejeita estados de produção, artefatos alterados e
+avaliação tecnicamente reprovada. O microsserviço permanece fora deste projeto.
+
 ## 2026-08-23 — Consumir o teste uma vez com critérios pré-registrados
 
 **Decisão:** exigir hashes do checkpoint e da calibração, limites operacionais

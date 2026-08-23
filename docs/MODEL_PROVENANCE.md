@@ -71,6 +71,18 @@ com `commercial_use_allowed: false` e exige revisão jurídica, validação exte
 segurança operacional e aprovação humana. Nenhuma etapa estatística concede
 autorização comercial automaticamente.
 
+O pacote `commercial_candidate` reúne a cadeia técnica já avaliada sem mudar
+esse estado. Seu descritor fixa por SHA-256 checkpoint, calibração, avaliação,
+política de qualidade e model card. A inferência só carrega o modelo depois que
+a foto passa no gate técnico e retorna estimativa com intervalo conformal. Toda
+saída mantém autorização bloqueada e lista as revisões pendentes.
+
+Esse núcleo é uma biblioteca/CLI interna, não o microsserviço do produto. Uma
+API futura poderá consumi-lo em outra aplicação somente depois de existir um
+pacote realmente treinado, validado e aprovado. O descritor atual rejeita
+qualquer tentativa de declarar `production_ready` ou
+`commercial_use_allowed` como verdadeiro.
+
 ## Gate de promoção
 
 Um pacote comercial futuro deve usar outro `model_id`, outro descritor e outro
