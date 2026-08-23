@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -128,6 +129,75 @@ def _canonical_rows(rows: list[dict[str, str]]) -> tuple[dict[str, str], ...]:
     )
 
 
+def calculate_snapshot_id(rows: list[dict[str, str]]) -> str:
+    canonical_json = json.dumps(
+        _canonical_rows(rows),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return calculate_content_sha256(canonical_json)
+
+
+def verify_snapshot_integrity(
+    rows: list[dict[str, str]],
+    *,
+    manifest_path: str | Path,
+    image_root: str | Path | None,
+) -> None:
+    errors: list[str] = []
+    for line_number, row in enumerate(rows, start=2):
+        expected_sha256 = row.get("image_sha256", "").lower()
+        expected_dhash = row.get("image_dhash", "").lower()
+        if not re.fullmatch(r"[0-9a-f]{64}", expected_sha256):
+            errors.append(f"linha {line_number}: image_sha256 inválido ou ausente")
+            continue
+        if not re.fullmatch(r"[0-9a-f]{16}", expected_dhash):
+            errors.append(f"linha {line_number}: image_dhash inválido ou ausente")
+            continue
+        image_path = resolve_image_path(row, manifest_path, image_root)
+        if not image_path.is_file():
+            errors.append(f"linha {line_number}: imagem não encontrada: {image_path}")
+            continue
+        actual_sha256 = calculate_sha256(image_path)
+        if actual_sha256 != expected_sha256:
+            errors.append(f"linha {line_number}: conteúdo da imagem foi alterado")
+            continue
+        actual_dhash = calculate_image_dhash(image_path)
+        if actual_dhash != expected_dhash:
+            errors.append(f"linha {line_number}: dHash da imagem foi alterado")
+    if errors:
+        raise ValueError("Snapshot inválido:\n- " + "\n- ".join(errors))
+
+
+def verify_seal_report(
+    report_path: str | Path,
+    *,
+    sealed_manifest_path: str | Path,
+    rows: list[dict[str, str]],
+) -> str:
+    path = Path(report_path)
+    if not path.is_file():
+        raise FileNotFoundError(f"Relatório de selagem não encontrado: {path}")
+    with path.open(encoding="utf-8") as file:
+        report = json.load(file)
+    if not isinstance(report, dict):
+        raise ValueError("Relatório de selagem inválido.")
+    if report.get("status") != "passed" or report.get("stage") != "sealed":
+        raise ValueError("A coleta não possui uma selagem aprovada.")
+    provenance = report.get("provenance")
+    if not isinstance(provenance, dict):
+        raise ValueError("Relatório de selagem sem proveniência.")
+
+    actual_manifest_sha256 = calculate_sha256(sealed_manifest_path)
+    if provenance.get("sealed_manifest_sha256") != actual_manifest_sha256:
+        raise ValueError("Hash do manifesto diverge do relatório de selagem.")
+    actual_snapshot_id = calculate_snapshot_id(rows)
+    if report.get("snapshot_id") != actual_snapshot_id:
+        raise ValueError("snapshot_id diverge do manifesto selado.")
+    return actual_snapshot_id
+
+
 def build_collection_snapshot(
     rows: list[dict[str, str]],
     *,
@@ -161,18 +231,12 @@ def build_collection_snapshot(
         )
 
     canonical_rows = _canonical_rows(enriched_rows)
-    canonical_json = json.dumps(
-        canonical_rows,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    )
     exact, near = _duplicate_pairs(
         fingerprints,
         near_distance=near_duplicate_hamming_distance,
     )
     return CollectionSnapshot(
-        snapshot_id=calculate_content_sha256(canonical_json),
+        snapshot_id=calculate_snapshot_id(list(canonical_rows)),
         rows=canonical_rows,
         exact_duplicates=exact,
         near_duplicates=near,

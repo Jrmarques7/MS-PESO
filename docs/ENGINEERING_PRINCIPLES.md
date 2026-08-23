@@ -30,6 +30,7 @@ linhas do componente.
 | `predict.py` | somente orquestrar a inferência pela linha de comando |
 | `validate_collection.py` | somente orquestrar a auditoria da coleta |
 | `seal_collection.py` | somente orquestrar a selagem da coleta aprovada |
+| `prepare_commercial_manifest.py` | somente orquestrar o split comercial |
 | `importers/` | converter uma fonte externa para o contrato MS-PESO |
 | futuros módulos de inferência | carregar o artefato e produzir estimativas |
 | futuros módulos de coleta | adquirir imagens e metadados de campo |

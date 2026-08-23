@@ -147,6 +147,7 @@ auth_001,farm_001,approved,2026-08-01,,true,true,false,secure://auth_001,
 
     payload = json.loads(capsys.readouterr().out)
     sealed_content = sealed.read_text(encoding="utf-8")
+    report_content = report.read_text(encoding="utf-8")
     assert payload["status"] == "passed"
     assert payload["stage"] == "sealed"
     assert payload["snapshot_id"]
@@ -162,3 +163,4 @@ auth_001,farm_001,approved,2026-08-01,,true,true,false,secure://auth_001,
     assert rejection["status"] == "rejected"
     assert "já existe" in rejection["errors"][0]
     assert sealed.read_text(encoding="utf-8") == sealed_content
+    assert report.read_text(encoding="utf-8") == report_content

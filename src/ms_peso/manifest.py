@@ -9,7 +9,9 @@ from pathlib import Path
 from statistics import median
 
 REQUIRED_COLUMNS = ("image_path", "animal_id", "event_id", "weight_kg")
-VALID_SPLITS = ("train", "val", "test")
+BASELINE_SPLITS = ("train", "val", "test")
+COMMERCIAL_SPLITS = ("train", "val", "calibration", "test")
+VALID_SPLITS = COMMERCIAL_SPLITS
 
 
 def read_manifest(path: str | Path) -> list[dict[str, str]]:
@@ -165,7 +167,7 @@ def assert_no_animal_leakage(rows: Iterable[dict[str, str]]) -> None:
         raise ValueError(f"Vazamento entre splits detectado por animal: {details}")
 
 
-def _split_counts(size: int, ratios: tuple[float, float, float]) -> list[int]:
+def _split_counts(size: int, ratios: tuple[float, ...]) -> list[int]:
     exact = [size * ratio for ratio in ratios]
     counts = [math.floor(value) for value in exact]
     remaining = size - sum(counts)
@@ -179,18 +181,17 @@ def _split_counts(size: int, ratios: tuple[float, float, float]) -> list[int]:
     return counts
 
 
-def grouped_split(
+def _grouped_split(
     rows: Iterable[dict[str, str]],
     *,
-    train_ratio: float = 0.70,
-    val_ratio: float = 0.15,
-    test_ratio: float = 0.15,
+    split_names: tuple[str, ...],
+    ratios: tuple[float, ...],
     seed: int = 42,
     stratify_bins: int = 5,
 ) -> list[dict[str, str]]:
-    """Divide aproximadamente por peso, mantendo cada animal em um único split."""
     rows = [dict(row) for row in rows]
-    ratios = (train_ratio, val_ratio, test_ratio)
+    if len(split_names) != len(ratios) or len(set(split_names)) != len(split_names):
+        raise ValueError("Nomes e proporções de split são incompatíveis.")
     if any(ratio <= 0 for ratio in ratios) or not math.isclose(sum(ratios), 1.0):
         raise ValueError("As proporções devem ser positivas e somar 1.0.")
 
@@ -202,8 +203,11 @@ def grouped_split(
         ((animal, median(weights)) for animal, weights in weights_by_animal.items()),
         key=lambda item: item[1],
     )
-    if len(animals) < 3:
-        raise ValueError("São necessários ao menos 3 animais para criar os splits.")
+    if len(animals) < len(split_names):
+        raise ValueError(
+            f"São necessários ao menos {len(split_names)} animais para criar "
+            "os splits."
+        )
 
     # Cada estrato precisa ser grande o bastante para representar também a
     # menor partição. Em datasets pequenos, reduzimos automaticamente os bins.
@@ -222,18 +226,18 @@ def grouped_split(
         rng.shuffle(items)
         counts = _split_counts(len(items), ratios)
         cursor = 0
-        for split, count in zip(VALID_SPLITS, counts, strict=True):
+        for split, count in zip(split_names, counts, strict=True):
             for animal_id, _ in items[cursor : cursor + count]:
                 assignments[animal_id] = split
             cursor += count
 
     # Em conjuntos muito pequenos, o arredondamento por estrato pode esvaziar
     # uma partição. Move um grupo da maior partição para manter o contrato.
-    for missing_split in VALID_SPLITS:
+    for missing_split in split_names:
         if missing_split in assignments.values():
             continue
         counts_by_split = {
-            split: list(assignments.values()).count(split) for split in VALID_SPLITS
+            split: list(assignments.values()).count(split) for split in split_names
         }
         donor = max(counts_by_split, key=counts_by_split.get)
         donor_animals = sorted(
@@ -247,6 +251,45 @@ def grouped_split(
         row["split"] = assignments[row["animal_id"]]
     assert_no_animal_leakage(rows)
     return rows
+
+
+def grouped_split(
+    rows: Iterable[dict[str, str]],
+    *,
+    train_ratio: float = 0.70,
+    val_ratio: float = 0.15,
+    test_ratio: float = 0.15,
+    seed: int = 42,
+    stratify_bins: int = 5,
+) -> list[dict[str, str]]:
+    """Cria o split histórico de pesquisa, sempre agrupado por animal."""
+    return _grouped_split(
+        rows,
+        split_names=BASELINE_SPLITS,
+        ratios=(train_ratio, val_ratio, test_ratio),
+        seed=seed,
+        stratify_bins=stratify_bins,
+    )
+
+
+def grouped_commercial_split(
+    rows: Iterable[dict[str, str]],
+    *,
+    train_ratio: float = 0.60,
+    val_ratio: float = 0.15,
+    calibration_ratio: float = 0.10,
+    test_ratio: float = 0.15,
+    seed: int = 42,
+    stratify_bins: int = 5,
+) -> list[dict[str, str]]:
+    """Reserva calibração independente sem vazar animais entre conjuntos."""
+    return _grouped_split(
+        rows,
+        split_names=COMMERCIAL_SPLITS,
+        ratios=(train_ratio, val_ratio, calibration_ratio, test_ratio),
+        seed=seed,
+        stratify_bins=stratify_bins,
+    )
 
 
 def write_manifest(rows: Iterable[dict[str, str]], path: str | Path) -> None:

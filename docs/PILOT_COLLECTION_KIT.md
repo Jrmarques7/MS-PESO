@@ -115,6 +115,34 @@ política de coleta, política de qualidade e manifesto selado. Um caminho de
 saída existente nunca é sobrescrito: alterações geram `v002`, `v003` e assim
 por diante.
 
+## Criar a divisão comercial
+
+O split comercial exige o manifesto e o relatório produzidos pela mesma
+selagem. Ele recalcula todos os hashes antes de separar os animais:
+
+```powershell
+python -m ms_peso.prepare_commercial_manifest `
+  --input data/processed/pilot_snapshot_v001.csv `
+  --snapshot-report artifacts/collection_snapshot/v001.json `
+  --image-root data/raw/pilot `
+  --output data/processed/pilot_commercial_split_v001.csv `
+  --output-report artifacts/commercial_split/v001.json
+```
+
+A proporção inicial é 60% treino, 15% validação, 10% calibração e 15% teste.
+Todas as visitas e imagens de um `animal_id` permanecem juntas. O relatório
+guarda seed, proporções, animais, imagens e distribuição de peso por partição.
+
+- `train`: ajusta os parâmetros do modelo;
+- `val`: escolhe época, arquitetura e hiperparâmetros;
+- `calibration`: calibra intervalo de incerteza e regra estatística de rejeição;
+- `test`: mede uma única vez o pacote final, depois de todas as escolhas.
+
+Calibração e teste não podem fornecer exemplos, estatísticas de alvo, seleção
+de época ou decisões de hiperparâmetros. Com poucos animais, a calibração será
+estatisticamente grosseira; a validade do intervalo depende do tamanho e da
+representatividade efetivamente coletados.
+
 ## Gate antes do treinamento
 
 Nenhuma imagem entra no candidato comercial enquanto a auditoria não estiver
@@ -124,6 +152,7 @@ aprovada. Depois da coleta, ainda será necessário:
 - revisar os pares perceptualmente semelhantes apontados pela selagem;
 - congelar o manifesto e registrar seu SHA-256;
 - separar treino, validação e teste por `animal_id`;
+- reservar calibração independente sem compartilhamento de `animal_id`;
 - reservar, quando possível, outra fazenda ou período como teste externo;
 - preservar distribuição de pesos, sexos, lotes e condições de captura.
 

@@ -53,7 +53,12 @@ def _rejection_payload(stage: str, error: str) -> dict[str, object]:
 def main() -> None:
     args = parse_args()
     payload: dict[str, object]
+    report_already_exists = args.output_report.exists()
     try:
+        if report_already_exists:
+            raise FileExistsError(
+                "O relatório de selagem já existe; escolha outro --output-report."
+            )
         if args.output_manifest.exists():
             raise FileExistsError(
                 "O manifesto selado já existe; escolha outro --output-manifest."
@@ -131,8 +136,9 @@ def main() -> None:
     except (FileExistsError, FileNotFoundError, ValueError) as exc:
         payload = _rejection_payload("setup", str(exc))
 
-    args.output_report.parent.mkdir(parents=True, exist_ok=True)
-    save_json(args.output_report, payload)
+    if not report_already_exists:
+        args.output_report.parent.mkdir(parents=True, exist_ok=True)
+        save_json(args.output_report, payload)
     print(json.dumps(payload, indent=2, ensure_ascii=False))
     if payload["status"] != "passed":
         raise SystemExit(2)

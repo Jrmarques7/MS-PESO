@@ -1,5 +1,24 @@
 # Registro de decisões
 
+## 2026-08-22 — Reservar calibração independente no split comercial
+
+**Decisão:** a trilha comercial usa quatro partições agrupadas por animal:
+60% treino, 15% validação, 10% calibração e 15% teste. O fluxo histórico de
+pesquisa continua com seus três grupos originais para preservar reprodução.
+
+**Motivo:** validação escolhe o modelo, enquanto calibração estima incerteza e
+regras de rejeição depois dessa escolha. Misturar essas funções ou consultar o
+teste produziria intervalos otimistas.
+
+**Cadeia de entrada:** o split aceita somente manifesto selado acompanhado de
+seu relatório. SHA-256, dHash, hash do manifesto e `snapshot_id` são verificados
+novamente; qualquer alteração posterior à selagem bloqueia o processo.
+
+**Consequência:** todas as visitas do mesmo animal permanecem no mesmo grupo.
+O relatório registra contagens e distribuição de peso. A proporção é inicial e
+não garante calibração útil se o piloto tiver poucos animais; tamanho e
+representatividade serão avaliados antes de publicar intervalos.
+
 ## 2026-08-22 — Não calibrar incerteza com validação ou teste reutilizados
 
 **Decisão:** não estimar intervalo conformal nem regra estatística de rejeição

@@ -4,6 +4,7 @@ import pytest
 
 from ms_peso.manifest import (
     assert_no_animal_leakage,
+    grouped_commercial_split,
     grouped_split,
     read_manifest,
     validate_rows,
@@ -54,6 +55,37 @@ def test_grouped_split_never_leaks_animal():
 def test_grouped_split_is_reproducible():
     first = grouped_split(make_rows(), seed=11)
     second = grouped_split(make_rows(), seed=11)
+    assert [row["split"] for row in first] == [row["split"] for row in second]
+
+
+def test_commercial_split_reserves_calibration_without_animal_leakage():
+    rows = make_rows(40)
+    rows.extend(
+        {
+            **row,
+            "image_path": row["image_path"].replace(".jpg", "_visit2.jpg"),
+            "event_id": row["event_id"] + "_visit2",
+        }
+        for row in make_rows(40)
+    )
+
+    result = grouped_commercial_split(rows, seed=19, stratify_bins=5)
+
+    assert {row["split"] for row in result} == {
+        "train",
+        "val",
+        "calibration",
+        "test",
+    }
+    assert_no_animal_leakage(result)
+    animals_by_split = {
+        split: {row["animal_id"] for row in result if row["split"] == split}
+        for split in ("train", "val", "calibration", "test")
+    }
+    assert sum(len(animals) for animals in animals_by_split.values()) == 40
+    assert len(animals_by_split["calibration"]) >= 4
+    first = grouped_commercial_split(rows, seed=19)
+    second = grouped_commercial_split(rows, seed=19)
     assert [row["split"] for row in first] == [row["split"] for row in second]
 
 

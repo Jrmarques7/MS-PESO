@@ -53,6 +53,7 @@ veterinária ou decisões em que um erro de peso possa causar dano.
 Os limites finais devem ser definidos com o usuário de campo. Para o piloto:
 
 - nenhum `animal_id` compartilhado entre treino, validação e teste;
+- calibração independente sem `animal_id` compartilhado com os demais grupos;
 - MAE e RMSE melhores que o baseline da média por margem relevante;
 - MAPE global inicial abaixo de 10%;
 - relatório de erro por faixa de peso, sexo, raça e origem;
@@ -85,6 +86,7 @@ R² será relatado, mas nunca utilizado sozinho como critério de sucesso.
 - coletar de 100 a 200 animais, preferencialmente em mais de uma visita;
 - registrar balança, câmera e condições;
 - auditar direitos, deduplicar e congelar snapshot antes da divisão;
+- separar treino, validação, calibração e teste por animal;
 - comparar modelo público, ajuste fino e modelo local.
 
 ### M3 — Robustez

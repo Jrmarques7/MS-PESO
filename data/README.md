@@ -49,3 +49,7 @@ comando de auditoria estão em `docs/PILOT_COLLECTION_KIT.md`.
 Após aprovação, `ms_peso.seal_collection` cria em `data/processed/` um
 manifesto canônico com `image_sha256` e `image_dhash`. O arquivo selado não deve
 ser editado nem sobrescrito; uma correção gera um novo snapshot.
+
+`ms_peso.prepare_commercial_manifest` verifica novamente imagens, manifesto e
+relatório de selagem antes de criar `train`, `val`, `calibration` e `test`. O
+split histórico de pesquisa com três partições permanece disponível.
