@@ -21,6 +21,9 @@ linhas do componente.
 | `evaluation.py` | executar e representar a avaliação do modelo |
 | `artifacts.py` | persistir checkpoints, relatórios e predições |
 | `train.py` | somente orquestrar o caso de uso de treinamento |
+| `model_package.py` | validar identidade, integridade e domínio do artefato |
+| `inference.py` | carregar o modelo congelado e estimar uma imagem |
+| `predict.py` | somente orquestrar a inferência pela linha de comando |
 | `importers/` | converter uma fonte externa para o contrato MS-PESO |
 | futuros módulos de inferência | carregar o artefato e produzir estimativas |
 | futuros módulos de coleta | adquirir imagens e metadados de campo |

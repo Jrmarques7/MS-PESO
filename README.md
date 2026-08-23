@@ -70,6 +70,10 @@ Os critérios completos estão em
   principalmente o viés em relação ao B2 na comparação pareada.
 - [x] Altura física extraída das nuvens PLY e auditada somente em
   treino/validação; não fundida ao B2 por não explicar seus resíduos.
+- [x] Resultados e limitações do B2 consolidados em model card verificável.
+- [x] Inferência local do B2 implementada com verificação do checkpoint e saída
+  JSON rastreável; smoke test em GPU reproduziu a previsão histórica com
+  diferença inferior a 0,03 kg.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -230,6 +234,24 @@ superior também foram auditadas; seus valores foram -0,106 e +0,210. O
 argumento opcional `--reference-manifest` permite alinhar a geometria de outra
 vista ao RGB lateral pelo mesmo animal/evento.
 
+## Executar inferência local
+
+O pacote experimental B2 usa o descritor `models/b2_cowdb.yaml` e espera o
+checkpoint local já treinado em `artifacts/efficientnet_b0_rgb/best_model.pt`.
+O descritor verifica o SHA-256 antes de carregar o modelo:
+
+```bash
+python -m ms_peso.predict \
+  --image /caminho/para/bovino_lateral.png \
+  --model models/b2_cowdb.yaml \
+  --device auto \
+  --output artifacts/prediction.json
+```
+
+A saída JSON registra a estimativa, dimensões originais, versão, arquitetura,
+hash, dispositivo e limitações. O B2 continua experimental, não está validado
+para Nelore e ainda não possui controle automático de qualidade da captura.
+
 A variante experimental com amostragem moderada por faixa obteve MAE pontual
 de 32,55 kg:
 
@@ -245,6 +267,7 @@ python -m ms_peso.train --config configs/efficientnet_b0_balanced.yaml
 - [Registro de decisões](docs/DECISIONS.md)
 - [Execução no Google Colab](docs/COLAB.md)
 - [Princípios de engenharia](docs/ENGINEERING_PRINCIPLES.md)
+- [Model card do B2](docs/MODEL_CARD_B2.md)
 - [Datasets e auditoria](docs/DATASETS.md)
 - [Fontes brasileiras de dados](docs/BRAZILIAN_DATA_SOURCES.md)
 

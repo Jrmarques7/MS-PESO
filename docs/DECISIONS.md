@@ -1,5 +1,28 @@
 # Registro de decisões
 
+## 2026-08-22 — Empacotar o B2 como inferência experimental verificável
+
+**Decisão:** disponibilizar o B2 como primeiro pacote de inferência local, com
+descritor versionado, model card obrigatório, verificação SHA-256 do checkpoint
+e saída JSON rastreável. O pacote permanece explicitamente experimental e não
+está pronto para produção.
+
+**Motivo:** o modelo é suficiente para validar a integração técnica, mas foi
+treinado somente em 154 bovinos Hereford do CowDB e ainda não foi validado em
+Nelore nem no ambiente brasileiro. Separar o pacote do futuro microsserviço
+preserva a responsabilidade única e permite reutilizar a mesma inferência em
+CLI, API e testes.
+
+**Verificação:** sobre a imagem conhecida do animal `cowdb_009`, com peso real
+de 416 kg, a execução em GPU retornou 426,3326 kg. O registro histórico é
+426,3531 kg; a diferença de 0,0205 kg é compatível com variação numérica entre
+ambientes de execução. Todos os 82 testes automatizados passaram.
+
+**Consequência:** nenhuma previsão será executada se o checkpoint não tiver a
+assinatura esperada ou se o model card estiver ausente. A saída inclui versão,
+hash, dispositivo e limitações, e não deve ser usada em venda, dosagem,
+tratamento ou substituição de balança aferida.
+
 ## 2026-08-22 — Adiar todos os pedidos externos de dados
 
 **Decisão:** não enviar neste momento solicitações à UFGD/Embrapa sobre as

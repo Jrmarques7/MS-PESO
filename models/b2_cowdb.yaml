@@ -1,0 +1,54 @@
+schema_version: 1
+model_id: b2-cowdb-efficientnet-b0
+model_version: "1"
+status: experimental
+production_ready: false
+architecture: efficientnet_b0
+
+checkpoint:
+  path: ../artifacts/efficientnet_b0_rgb/best_model.pt
+  sha256: 43fe4b97c65ffcafd1e68d8e6dcfac6059c807019898120bf6ecbfa34541dedd
+
+input:
+  modality: rgb
+  view: left
+  image_size: 224
+  color_space: RGB
+  capture_protocol: controlled_single_cattle_full_body
+
+output:
+  name: estimated_weight_kg
+  unit: kg
+
+domain:
+  dataset: CowDB
+  breed: hereford
+  country: Russia
+  animals: 154
+
+validation:
+  split_animals:
+    train: 109
+    val: 25
+    test: 20
+  test_metrics_seed_42:
+    mae_kg: 34.2145
+    rmse_kg: 51.0598
+    mape_pct: 9.3913
+    bias_kg: 7.0661
+    r2: 0.5340
+  three_seed_metrics:
+    mae_kg_mean: 32.10
+    mae_kg_std: 2.43
+    rmse_kg_mean: 49.11
+    rmse_kg_std: 4.36
+    mape_pct_mean: 8.84
+    mape_pct_std: 0.73
+
+limitations:
+  - Não validado para bovinos Nelore.
+  - Não validado em fazendas, câmeras ou protocolos externos.
+  - Erro muito alto na faixa abaixo de 350 kg do teste atual.
+  - Não usar para venda, dosagem veterinária ou decisões críticas.
+
+model_card: ../docs/MODEL_CARD_B2.md
