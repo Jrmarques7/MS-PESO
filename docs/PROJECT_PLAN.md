@@ -13,10 +13,19 @@ o modelo.
 
 ## 2. Usuário e uso inicial
 
-O usuário-alvo inicial é um técnico ou produtor que captura o animal em um
-corredor/brete padronizado. O resultado deve apoiar acompanhamento de ganho de
-peso e triagem. O MVP não deve ser usado como única fonte para venda, dosagem
-veterinária ou decisões em que um erro de peso possa causar dano.
+O usuário-alvo inicial é um técnico ou produtor que grava um vídeo lateral
+curto do animal no pasto ou em um ponto natural de passagem, sem precisar
+conduzi-lo até uma balança. O sistema selecionará quadros válidos e estimará o
+peso para acompanhar a evolução do lote. A captura precisa continuar guiada:
+um animal por vez, corpo inteiro visível, pose lateral e distância ou referência
+de escala controlada.
+
+O primeiro marco científico continua recebendo uma imagem por inferência. A
+captura por vídeo será construída sobre esse núcleo depois que segmentação,
+pose e qualidade estiverem validadas. A balança permanece obrigatória durante a
+coleta e validação dos dados, mas não na rotina posterior de estimativa. O
+resultado não deve ser usado como única fonte para venda, dosagem veterinária
+ou decisões em que um erro de peso possa causar dano.
 
 ## 3. Escopo do MVP
 
@@ -47,6 +56,8 @@ veterinária ou decisões em que um erro de peso possa causar dano.
 4. Duas vistas contêm informação complementar e reduzem o erro.
 5. O desempenho cai ao mudar fazenda, raça ou câmera; ajuste local recupera
    parte dessa diferença.
+6. A mediana de três a cinco bons quadros laterais de um vídeo é mais estável
+   que a estimativa de um único quadro escolhido sem consenso.
 
 ## 5. Critérios de sucesso
 
@@ -59,6 +70,9 @@ Os limites finais devem ser definidos com o usuário de campo. Para o piloto:
 - relatório de erro por faixa de peso, sexo, raça e origem;
 - teste externo por fazenda ou por período antes de declarar uso real;
 - toda predição rastreável até versão do modelo e protocolo de captura.
+- seleção dos quadros feita sem consultar o peso real do evento;
+- limiar de divergência entre quadros definido antes de abrir o teste final;
+- resposta de vídeo rastreável até os instantes e notas dos quadros escolhidos.
 
 R² será relatado, mas nunca utilizado sozinho como critério de sucesso.
 
@@ -96,12 +110,28 @@ R² será relatado, mas nunca utilizado sozinho como critério de sucesso.
 
 - segmentação do animal;
 - detecção automática de pose/foto inválida;
+- receber vídeo lateral curto e amostrar aproximadamente 15 a 30 quadros;
+- eliminar quadros borrados, cortados, ocluídos, sem corpo inteiro ou com mais
+  de um animal dominante;
+- ranquear qualidade e selecionar de três a cinco quadros bons, distintos no
+  tempo, sem usar o peso real na seleção;
+- estimar cada quadro escolhido e agregar o resultado pela mediana;
+- rejeitar o vídeo quando houver poucos quadros válidos ou divergência excessiva
+  entre as estimativas;
+- comparar o vídeo agregado com o melhor quadro único em avaliação separada por
+  animal e evento;
 - segunda vista ou profundidade;
 - teste em outra fazenda, lote ou período.
 
 ### M4 — Produto
 
 - adaptador HTTP de inferência criado e bloqueado até a promoção do modelo;
+- endpoint de vídeo separado do endpoint de imagem, preservando o núcleo de
+  inferência por quadro;
+- retorno auditável com instantes selecionados, notas de qualidade, estimativas
+  por quadro, resultado agregado e motivo de eventual rejeição;
+- remoção do vídeo temporário ao final da requisição, salvo consentimento e
+  política explícitos para formar uma coleta autorizada;
 - interface de captura guiada na aplicação consumidora;
 - estimativa de incerteza e regra de rejeição;
 - monitoramento de deriva e rotina de recalibração;
@@ -117,6 +147,10 @@ R² será relatado, mas nunca utilizado sozinho como critério de sucesso.
 | Poucos indivíduos, muitas fotos | Falsa impressão de escala | Contabilizar animais e eventos, não frames |
 | Mudança de raça/fazenda | Queda de generalização | Teste externo e ajuste local |
 | Perspectiva sem referência | Tamanho físico ambíguo | Câmera fixa, calibração ou RGB-D |
+| Muitos frames quase iguais | Confiança artificial no consenso | Seleção com diversidade temporal e avaliação por evento |
+| Vídeo com quadros de animais diferentes | Peso agregado sem significado | Rastreamento do indivíduo e rejeição de troca/oclusão |
+| Seleção de quadro ajustada pelo peso real | Vazamento e resultado otimista | Ranqueamento baseado apenas em imagem e protocolo congelado |
+| Divergência entre quadros | Estimativa instável | Limiar calibrado e rejeição do vídeo |
 | Distribuição de peso desigual | Viés nas faixas raras | Amostragem/ponderação apenas no treino |
 | Uso fora do domínio | Predição perigosa | Incerteza, detecção de qualidade e rejeição |
 
@@ -124,7 +158,8 @@ R² será relatado, mas nunca utilizado sozinho como critério de sucesso.
 
 - acesso aos animais e identificação individual;
 - balança aferida e dados de peso sincronizados;
-- celular/câmera fixa; marcador de escala recomendado;
+- celular capaz de gravar vídeo lateral; marcador ou medição de distância
+  recomendados;
 - autorização da propriedade e política para imagens/metadados;
 - armazenamento versionado fora do Git para imagens;
 - Google Colab com GPU ou máquina CUDA;
@@ -143,6 +178,8 @@ notebooks.
 - Qual raça ou cruzamento será atendido primeiro?
 - Qual faixa de peso, sexo e fase produtiva?
 - Há acesso a balança e identificação individual?
-- A captura será por celular, câmera fixa ou RGB-D?
+- Qual celular/câmera será o dispositivo inicial e como obteremos distância ou
+  referência de escala no pasto?
+- Quantos animais formarão uma amostra representativa de cada lote por evento?
 - Quantas fazendas e quantas datas de coleta são possíveis?
 - Qual erro em kg/% ainda produz uma decisão útil?
