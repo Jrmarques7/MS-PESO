@@ -55,6 +55,9 @@ def create_fake_cowdb(root: Path, number_of_animals: int = 3) -> Path:
             Image.new("I;16", (16, 12), color=4000).save(
                 directory / f"depth-12.00.0{animal_id}.png"
             )
+            (root / str(animal_id) / f"{view}-12.00.0{animal_id}.ply").write_bytes(
+                b"ply"
+            )
     measurements = root / "Manual_measurements.xlsx"
     workbook.save(measurements)
     return measurements
@@ -126,6 +129,27 @@ def test_includes_synchronized_depth_path(tmp_path):
     )
 
 
+def test_includes_synchronized_point_cloud_path(tmp_path):
+    dataset_root = tmp_path / "cowdb"
+    measurements_path = create_fake_cowdb(dataset_root)
+    rows = build_cowdb_manifest_rows(
+        dataset_root,
+        measurements_path,
+        image_root=tmp_path,
+        views=["left"],
+        include_point_cloud=True,
+    )
+
+    assert rows[0]["point_cloud_path"].endswith("left-12.00.01.ply")
+    validate_rows(
+        rows,
+        manifest_path=tmp_path / "manifest.csv",
+        image_root=tmp_path,
+        check_images=True,
+        additional_file_columns=("point_cloud_path",),
+    )
+
+
 def test_rejects_missing_synchronized_depth(tmp_path):
     dataset_root = tmp_path / "cowdb"
     measurements_path = create_fake_cowdb(dataset_root)
@@ -138,6 +162,21 @@ def test_rejects_missing_synchronized_depth(tmp_path):
             image_root=tmp_path,
             views=["left"],
             include_depth=True,
+        )
+
+
+def test_rejects_missing_synchronized_point_cloud(tmp_path):
+    dataset_root = tmp_path / "cowdb"
+    measurements_path = create_fake_cowdb(dataset_root)
+    (dataset_root / "2" / "left-12.00.02.ply").unlink()
+
+    with pytest.raises(ValueError, match="Nuvem de pontos pareada ausente"):
+        build_cowdb_manifest_rows(
+            dataset_root,
+            measurements_path,
+            image_root=tmp_path,
+            views=["left"],
+            include_point_cloud=True,
         )
 
 

@@ -1,5 +1,22 @@
 # Registro de decisões
 
+## 2026-08-22 — Rejeitar fusão da altura PLY no gate de validação
+
+**Decisão:** preservar a leitura e a auditoria de nuvens PLY, mas não treinar
+uma variante RGB + altura com a segmentação atual. O teste permanece intocado.
+
+**Motivo:** a altura robusta teve correlação com peso de +0,437 no treino e
++0,402 na validação, porém sua regressão linear obteve MAE de 46,89 kg na
+validação, contra 37,63 kg do B2. Mais importante, a correlação da altura com o
+resíduo de validação do B2 foi -0,016: ela não acrescenta sinal complementar.
+A correlação de apenas +0,36 com as alturas manuais também mostra que piso e
+partes do cenário ainda limitam a medida física extraída.
+
+**Consequência:** não consultar o teste nem gastar GPU nessa fusão. Uma nova
+tentativa 3D exigirá segmentação corporal realmente tridimensional, combinação
+das três câmeras ou reconstrução fornecida pelos autores; somente então passará
+novamente pelo mesmo gate de treino/validação.
+
 ## 2026-08-22 — Não promover a fusão lateral + superior
 
 **Decisão:** manter B2 como baseline oficial e preservar A5 apenas como suporte

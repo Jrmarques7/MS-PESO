@@ -7,6 +7,7 @@ from ms_peso.depth_crop import (
     detect_depth_foreground_box,
     estimate_background_depth,
     largest_component_box,
+    largest_component_mask,
     render_depth_guided_rgb,
 )
 
@@ -33,6 +34,17 @@ def test_finds_largest_component_box() -> None:
     assert box.top == pytest.approx(6 / 20)
     assert box.right == pytest.approx(18 / 20)
     assert box.bottom == pytest.approx(16 / 20)
+
+
+def test_largest_component_mask_removes_disconnected_noise() -> None:
+    mask = np.zeros((8, 8), dtype=bool)
+    mask[2:6, 2:7] = True
+    mask[0, 0] = True
+
+    component = largest_component_mask(mask, minimum_area=5)
+
+    assert component.sum() == 20
+    assert not component[0, 0]
 
 
 def test_detects_closer_rectangle_against_background() -> None:

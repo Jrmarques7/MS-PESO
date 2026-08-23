@@ -385,13 +385,62 @@ python -m ms_peso.prepare_manifest \
 python -m ms_peso.train --config configs/efficientnet_b0_left_top.yaml
 ```
 
+### A3-Gate-CowDB-001 — altura física da nuvem PLY
+
+Antes de treinar uma fusão RGB + geometria, foi executado um gate sem consultar
+os 20 animais de teste. Os PLY laterais organizados têm 512 × 424 pontos físicos
+alinhados à profundidade. O fundo foi estimado somente com os 109 animais de
+treino; a máscara usa diferença mínima de 150 mm, maior componente conectado e
+altura entre os quantis 5% e 95% do eixo vertical.
+
+A extração passou nos 109 animais de treino e nos 25 de validação, com 50.257 a
+97.154 pontos válidos por amostra. O teste foi excluído da própria extração.
+
+| Diagnóstico | Treino | Validação |
+|---|---:|---:|
+| correlação altura × peso | +0,437 | +0,402 |
+| regressão só com altura — MAE | 40,03 kg | 46,89 kg |
+| regressão só com altura — RMSE | 51,46 kg | 62,67 kg |
+
+Na mesma validação, o checkpoint B2 obteve MAE de 37,63 kg. A correlação entre
+altura e o resíduo real menos predito do B2 foi -0,016, praticamente zero. A
+altura também apresentou correlação de apenas aproximadamente +0,36 com as
+alturas manualmente medidas, evidenciando uma segmentação física ainda ruidosa.
+
+**Decisão do gate:** não integrar a altura ao EfficientNet, não gastar uma
+execução GPU e não abrir o teste. Preservar o leitor PLY e a auditoria para uma
+futura segmentação 3D mais fiel.
+
+Reprodução:
+
+```bash
+python -m ms_peso.import_cowdb \
+  --dataset-root data/raw/cowdb \
+  --image-root data \
+  --output data/interim/cowdb_rgb_depth_point_cloud_rows.csv \
+  --views left \
+  --include-depth \
+  --include-point-cloud
+python -m ms_peso.prepare_manifest \
+  --input data/interim/cowdb_rgb_depth_point_cloud_rows.csv \
+  --output data/processed/rgb_depth_point_cloud_manifest.csv \
+  --image-root data \
+  --check-images \
+  --seed 42
+python -m ms_peso.audit_point_cloud_geometry \
+  --manifest data/processed/rgb_depth_point_cloud_manifest.csv \
+  --image-root data \
+  --output artifacts/point_cloud_geometry_audit/report.json \
+  --reference-checkpoint artifacts/efficientnet_b0_rgb/best_model.pt
+```
+
 ## Ablações previstas
 
 | ID | Mudança em relação a B1 |
 |---|---|
 | A1 | recorte pelo bounding box |
 | A2 | fundo removido por máscara |
-| A3 | marcador de escala/câmera calibrada |
+| A3 | escala física via PLY — gate reprovado antes do treinamento |
 | A4 | metadados: raça, sexo e idade |
 | A5 | fusão lateral + superior — avaliada, não promovida |
 | A6 | RGB + profundidade |

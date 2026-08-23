@@ -99,25 +99,23 @@ def clean_foreground_mask(mask: np.ndarray, *, downsample: int = 4) -> np.ndarra
     return tensor[0, 0].numpy().astype(bool)
 
 
-def largest_component_box(mask: np.ndarray, *, minimum_area: int = 30) -> RelativeBox:
+def largest_component_mask(
+    mask: np.ndarray, *, minimum_area: int = 30
+) -> np.ndarray:
     if mask.ndim != 2:
         raise ValueError("A máscara deve ser bidimensional.")
-    height, width = mask.shape
     visited = np.zeros_like(mask, dtype=bool)
-    best: tuple[int, int, int, int, int] | None = None
+    best_pixels: list[tuple[int, int]] = []
+    height, width = mask.shape
     for start_y, start_x in np.argwhere(mask):
         if visited[start_y, start_x]:
             continue
         queue = deque([(int(start_y), int(start_x))])
         visited[start_y, start_x] = True
-        area = 0
-        min_x = max_x = int(start_x)
-        min_y = max_y = int(start_y)
+        pixels: list[tuple[int, int]] = []
         while queue:
             y, x = queue.popleft()
-            area += 1
-            min_x, max_x = min(min_x, x), max(max_x, x)
-            min_y, max_y = min(min_y, y), max(max_y, y)
+            pixels.append((y, x))
             for next_y, next_x in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)):
                 if (
                     0 <= next_y < height
@@ -127,11 +125,22 @@ def largest_component_box(mask: np.ndarray, *, minimum_area: int = 30) -> Relati
                 ):
                     visited[next_y, next_x] = True
                     queue.append((next_y, next_x))
-        if best is None or area > best[0]:
-            best = (area, min_x, min_y, max_x + 1, max_y + 1)
-    if best is None or best[0] < minimum_area:
+        if len(pixels) > len(best_pixels):
+            best_pixels = pixels
+    if len(best_pixels) < minimum_area:
         raise ValueError("Nenhum componente de primeiro plano confiável encontrado.")
-    _, left, top, right, bottom = best
+    component = np.zeros_like(mask, dtype=bool)
+    ys, xs = zip(*best_pixels, strict=True)
+    component[np.asarray(ys), np.asarray(xs)] = True
+    return component
+
+
+def largest_component_box(mask: np.ndarray, *, minimum_area: int = 30) -> RelativeBox:
+    component = largest_component_mask(mask, minimum_area=minimum_area)
+    height, width = component.shape
+    ys, xs = np.nonzero(component)
+    left, right = int(xs.min()), int(xs.max()) + 1
+    top, bottom = int(ys.min()), int(ys.max()) + 1
     return RelativeBox(left / width, top / height, right / width, bottom / height)
 
 

@@ -70,7 +70,8 @@ A cópia local usada no primeiro manifesto está fixada no commit
 O importador inicial usa somente `raw/<view>/rgb-*.png`. Com
 `--include-depth`, ele também valida o par `depth-*.png` com o mesmo timestamp
 e grava `depth_image_path`; a importação falha se qualquer par estiver ausente.
-As nuvens de pontos ficam reservadas para experimentos posteriores.
+Com `--include-point-cloud`, ele valida e grava também o PLY organizado da
+mesma vista e timestamp em `point_cloud_path`.
 
 ### Licença
 
@@ -113,6 +114,18 @@ python -m ms_peso.import_cowdb \
   --include-depth
 ```
 
+Para incluir a nuvem física já calculada com os parâmetros internos da câmera:
+
+```bash
+python -m ms_peso.import_cowdb \
+  --dataset-root data/raw/cowdb \
+  --image-root data \
+  --output data/interim/cowdb_rgb_depth_point_cloud_rows.csv \
+  --views left \
+  --include-depth \
+  --include-point-cloud
+```
+
 Depois de dividir esse manifesto, recortes ou máscaras retangulares podem ser
 gerados com `python -m ms_peso.prepare_depth_crops`. O fundo é calculado apenas
 com linhas `train`; imagens brutas não são modificadas. A ferramenta exige uma
@@ -146,3 +159,8 @@ Não há animal compartilhado entre partições.
 O manifesto lateral + superior também contém 154 eventos e conserva exatamente
 os mesmos 109/25/20 animais em cada partição. Seu SHA-256 é
 `cac0b63ba20aa3853f5c43c679b7bca92761780118905ba5386c8d27392a65f1`.
+
+A nuvem PLY possui 217.088 vértices binários little-endian, correspondentes aos
+512 × 424 pixels da profundidade. As coordenadas `x`, `y` e `z` já estão em
+unidades físicas; o bloco de câmera do arquivo contém valores padrão do PCL e
+não deve ser tratado como uma calibração publicada separadamente.

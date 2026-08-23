@@ -30,6 +30,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Inclui o caminho da profundidade sincronizada no manifesto.",
     )
+    parser.add_argument(
+        "--include-point-cloud",
+        action="store_true",
+        help="Inclui o caminho da nuvem PLY sincronizada no manifesto.",
+    )
     return parser.parse_args()
 
 
@@ -47,6 +52,7 @@ def main() -> None:
         image_root=args.image_root,
         views=args.views,
         include_depth=args.include_depth,
+        include_point_cloud=args.include_point_cloud,
     )
     validate_rows(
         rows,
@@ -54,6 +60,9 @@ def main() -> None:
         image_root=args.image_root,
         check_images=True,
         additional_image_columns=("depth_image_path",) if args.include_depth else (),
+        additional_file_columns=("point_cloud_path",)
+        if args.include_point_cloud
+        else (),
     )
     write_manifest(rows, args.output)
 

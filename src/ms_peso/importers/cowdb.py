@@ -127,6 +127,7 @@ def build_cowdb_manifest_rows(
     image_root: str | Path,
     views: Iterable[str] = ("left",),
     include_depth: bool = False,
+    include_point_cloud: bool = False,
 ) -> list[dict[str, str]]:
     """Compõe medidas e imagens CowDB no contrato de manifesto MS-PESO."""
     measurements = read_cowdb_measurements(measurements_path)
@@ -153,16 +154,28 @@ def build_cowdb_manifest_rows(
             depth_path = image_path.with_name(
                 image_path.name.replace("rgb-", "depth-", 1)
             )
+            timestamp = image_path.stem.removeprefix("rgb-")
+            point_cloud_path = image_path.parents[2] / f"{view}-{timestamp}.ply"
             if include_depth and not depth_path.is_file():
                 raise ValueError(
                     f"Profundidade pareada ausente para animal {source_id}, "
                     f"vista {view}: {depth_path}"
+                )
+            if include_point_cloud and not point_cloud_path.is_file():
+                raise ValueError(
+                    f"Nuvem de pontos pareada ausente para animal {source_id}, "
+                    f"vista {view}: {point_cloud_path}"
                 )
             try:
                 relative_image_path = image_path.resolve().relative_to(image_base)
                 relative_depth_path = (
                     depth_path.resolve().relative_to(image_base)
                     if include_depth
+                    else None
+                )
+                relative_point_cloud_path = (
+                    point_cloud_path.resolve().relative_to(image_base)
+                    if include_point_cloud
                     else None
                 )
             except ValueError as exc:
@@ -176,6 +189,11 @@ def build_cowdb_manifest_rows(
                     **(
                         {"depth_image_path": relative_depth_path.as_posix()}
                         if relative_depth_path is not None
+                        else {}
+                    ),
+                    **(
+                        {"point_cloud_path": relative_point_cloud_path.as_posix()}
+                        if relative_point_cloud_path is not None
                         else {}
                     ),
                     "animal_id": animal_id,

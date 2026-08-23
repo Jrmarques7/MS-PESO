@@ -68,6 +68,8 @@ Os critérios completos estão em
   MAE de 28,16 kg, mas foi rejeitada após variar até 45,00 kg entre seeds.
 - [x] Fusão lateral + superior avaliada; não promovida por piorar MAE, MAPE e
   principalmente o viés em relação ao B2 na comparação pareada.
+- [x] Altura física extraída das nuvens PLY e auditada somente em
+  treino/validação; não fundida ao B2 por não explicar seus resíduos.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -209,6 +211,21 @@ python -m ms_peso.train --config configs/efficientnet_b0_left_top.yaml
 ```
 
 Essa configuração foi preservada para reprodução, mas não substituiu o B2.
+
+As nuvens PLY organizadas do CowDB podem ser auditadas sem consultar o teste.
+O comando abaixo mede uma altura robusta após subtração do fundo calculado
+somente no treino e compara seu sinal com os resíduos de validação do B2:
+
+```bash
+python -m ms_peso.audit_point_cloud_geometry \
+  --manifest data/processed/rgb_depth_point_cloud_manifest.csv \
+  --image-root data \
+  --output artifacts/point_cloud_geometry_audit/report.json \
+  --reference-checkpoint artifacts/efficientnet_b0_rgb/best_model.pt
+```
+
+Esse gate rejeitou a fusão antes do treinamento: a correlação entre altura e
+resíduo do B2 na validação foi -0,016, praticamente nula.
 
 A variante experimental com amostragem moderada por faixa obteve MAE pontual
 de 32,55 kg:

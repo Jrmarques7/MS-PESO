@@ -20,6 +20,11 @@ declarar `depth_image_column: depth_image_path`; nesse caso, o treinamento
 valida e carrega os dois arquivos. O caminho de profundidade é opcional no
 contrato geral e não altera o baseline RGB.
 
+Fontes 3D podem incluir `point_cloud_path`. Esse campo aponta para um arquivo
+de nuvem de pontos, não para uma imagem; por isso ele recebe validação própria.
+No CowDB, `--include-point-cloud` associa explicitamente cada PLY à vista e ao
+timestamp correspondentes.
+
 Depois de executar `ms_peso.prepare_manifest`, a coluna `split` terá um dos
 valores `train`, `val` ou `test`.
 

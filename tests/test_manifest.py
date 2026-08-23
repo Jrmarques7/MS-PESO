@@ -94,3 +94,17 @@ def test_manifest_round_trip(tmp_path):
 
     with output.open(encoding="utf-8", newline="") as file:
         assert "split" in next(csv.reader(file))
+
+
+def test_validates_additional_non_image_file(tmp_path):
+    rows = make_rows(3)
+    rows[0]["point_cloud_path"] = "clouds/missing.ply"
+
+    with pytest.raises(ValueError, match="arquivo não encontrado"):
+        validate_rows(
+            rows,
+            manifest_path=tmp_path / "manifest.csv",
+            image_root=tmp_path,
+            check_images=True,
+            additional_file_columns=("point_cloud_path",),
+        )

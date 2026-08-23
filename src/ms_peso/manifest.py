@@ -63,6 +63,7 @@ def validate_rows(
     image_root: str | Path | None = None,
     check_images: bool = False,
     additional_image_columns: Iterable[str] = (),
+    additional_file_columns: Iterable[str] = (),
 ) -> None:
     rows = list(rows)
     if not rows:
@@ -125,6 +126,17 @@ def validate_rows(
                         errors.append(
                             f"linha {line_number}: imagem inválida {image_path}: {exc}"
                         )
+            for file_column in additional_file_columns:
+                if not row.get(file_column, "").strip():
+                    errors.append(f"linha {line_number}: {file_column} vazio")
+                    continue
+                file_path = resolve_manifest_path(
+                    row, file_column, manifest_path, image_root
+                )
+                if not file_path.is_file():
+                    errors.append(
+                        f"linha {line_number}: arquivo não encontrado: {file_path}"
+                    )
 
     if errors:
         preview = "\n".join(f"- {error}" for error in errors[:20])
