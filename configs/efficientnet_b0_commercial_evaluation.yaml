@@ -1,0 +1,37 @@
+project:
+  name: ms-peso-efficientnet-b0-commercial-evaluation
+  seed: 42
+  workflow: commercial_evaluation
+
+data:
+  manifest: data/processed/pilot_commercial_split_v001.csv
+  split_report: artifacts/commercial_split/v001.json
+  image_root: data/raw/pilot
+  view: left
+  image_size: 224
+  batch_size: 32
+  num_workers: 2
+
+model:
+  checkpoint: artifacts/commercial_fit_v001/best_model.pt
+  checkpoint_sha256: REPLACE_WITH_CHECKPOINT_SHA256
+
+calibration:
+  report: artifacts/commercial_calibration_v001/calibration.json
+  report_sha256: REPLACE_WITH_CALIBRATION_REPORT_SHA256
+
+evaluation:
+  bootstrap_iterations: 10000
+  access_receipt: artifacts/commercial_test_access/v001.json
+
+acceptance:
+  minimum_test_animals: REPLACE_BEFORE_OPENING_TEST
+  maximum_mae_upper_95_kg: REPLACE_BEFORE_OPENING_TEST
+  maximum_rmse_upper_95_kg: REPLACE_BEFORE_OPENING_TEST
+  maximum_mape_upper_95_pct: REPLACE_BEFORE_OPENING_TEST
+  maximum_absolute_bias_bound_95_kg: REPLACE_BEFORE_OPENING_TEST
+  minimum_group_coverage_lower_95: REPLACE_BEFORE_OPENING_TEST
+  maximum_interval_radius_kg: REPLACE_BEFORE_OPENING_TEST
+
+output:
+  directory: artifacts/commercial_evaluation_v001

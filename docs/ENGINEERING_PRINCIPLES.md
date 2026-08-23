@@ -33,9 +33,13 @@ linhas do componente.
 | `prepare_commercial_manifest.py` | somente orquestrar o split comercial |
 | `commercial_data.py` | verificar identidade e contagens do snapshot comercial |
 | `commercial_training.py` | validar o contrato e a proveniência do ajuste comercial |
+| `commercial_checkpoint.py` | autenticar o checkpoint comum às etapas comerciais |
 | `conformal.py` | calcular calibração conformal sem conhecer modelo ou arquivos |
 | `commercial_calibration.py` | validar o checkpoint permitido na calibração |
 | `calibrate.py` | somente orquestrar a calibração comercial |
+| `test_evaluation.py` | calcular estatísticas finais agrupadas por animal |
+| `commercial_evaluation.py` | congelar entradas e critérios antes do teste |
+| `evaluate_commercial.py` | somente orquestrar a avaliação final protegida |
 | `importers/` | converter uma fonte externa para o contrato MS-PESO |
 | futuros módulos de inferência | carregar o artefato e produzir estimativas |
 | futuros módulos de coleta | adquirir imagens e metadados de campo |

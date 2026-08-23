@@ -1,5 +1,20 @@
 # Registro de decisões
 
+## 2026-08-23 — Consumir o teste uma vez com critérios pré-registrados
+
+**Decisão:** exigir hashes do checkpoint e da calibração, limites operacionais
+completos e um recibo exclusivo antes de abrir a partição `test`. Métricas são
+balanceadas por animal e seus IC95% usam bootstrap de animais inteiros.
+
+**Motivo:** escolher limites depois de observar o teste transforma esse
+conjunto em validação e torna a conclusão otimista. Fotos repetidas também não
+podem aumentar artificialmente a precisão estatística.
+
+**Consequência:** calibração larga ou teste pequeno são rejeitados antes do
+acesso. Depois do recibo, qualquer falha consome o teste; alterar candidato,
+calibração ou critérios exige outro conjunto independente. Uma passagem gera
+somente recomendação de revisão, nunca autorização comercial automática.
+
 ## 2026-08-23 — Calibrar incerteza por animal sem consultar o teste
 
 **Decisão:** usar split conformal com o maior erro absoluto de cada

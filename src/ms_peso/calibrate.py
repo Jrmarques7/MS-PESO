@@ -56,11 +56,12 @@ def main() -> None:
         manifest_path=manifest_path,
         split_report_path=split_report_path,
     )
-    checkpoint = validate_commercial_calibration_contract(
+    calibration_contract = validate_commercial_calibration_contract(
         config,
         data_contract,
         output_dir=output_dir,
     )
+    checkpoint = calibration_contract.checkpoint
 
     selected_view = data_config["view"]
     calibration_rows = [
@@ -72,7 +73,7 @@ def main() -> None:
         raise ValueError("Nenhuma imagem de calibração para a vista configurada.")
     conformal_quantile_rank(
         len({row["animal_id"] for row in calibration_rows}),
-        target_coverage=checkpoint.target_coverage,
+        target_coverage=calibration_contract.target_coverage,
     )
     validate_rows(
         calibration_rows,
@@ -121,7 +122,7 @@ def main() -> None:
         result.targets,
         result.predictions,
         group_ids,
-        target_coverage=checkpoint.target_coverage,
+        target_coverage=calibration_contract.target_coverage,
     )
 
     output_dir.mkdir(parents=True, exist_ok=True)

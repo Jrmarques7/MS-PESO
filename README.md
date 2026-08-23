@@ -85,6 +85,7 @@ Os critérios completos estão em
 - [x] Ajuste comercial protegido criado com inicialização aleatória e acesso
   restrito a treino/validação.
 - [x] Calibração conformal protegida criada por animal, sem acesso ao teste.
+- [x] Avaliação final com recibo único, IC95% e gate técnico implementada.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -217,6 +218,22 @@ animal contribui com seu maior erro absoluto, evitando tratar fotos repetidas
 como observações independentes. Para cobertura de 90%, são necessários ao
 menos nove animais de calibração; uma amostra menor é rejeitada. O conjunto
 `test` permanece intocado e o candidato continua não promovido.
+
+A avaliação final usa
+`configs/efficientnet_b0_commercial_evaluation.yaml`. Antes da execução, uma
+pessoa responsável precisa registrar os hashes do checkpoint e da calibração e
+substituir todos os limites `REPLACE_BEFORE_OPENING_TEST`. O comando é:
+
+```bash
+python -m ms_peso.evaluate_commercial \
+  --config configs/efficientnet_b0_commercial_evaluation.yaml
+```
+
+Os critérios são congelados em um recibo imutável antes de abrir `test`. O
+relatório usa bootstrap por animal, IC95% das métricas e intervalo de Wilson
+para cobertura. Uma segunda execução com o mesmo recibo é bloqueada. Mesmo
+quando todos os critérios técnicos passam, a saída recomenda revisão humana e
+mantém `commercial_use_allowed: false`.
 
 A arquitetura ConvNeXt-Tiny também foi avaliada, mas não substituiu o B2:
 

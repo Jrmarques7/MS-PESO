@@ -58,6 +58,19 @@ artificialmente o tamanho estatístico da calibração. O relatório registra a
 cobertura solicitada, o quantil, o número de animais e que o teste permaneceu
 intocado; o resultado ainda não promove nem autoriza o modelo.
 
+O modo `commercial_evaluation` exige hashes do checkpoint e da calibração,
+além de critérios operacionais definidos antes do teste. Um recibo exclusivo
+registra essas entradas e marca o conjunto como consumido antes de abrir suas
+imagens. Métricas e intervalos de confiança são calculados com reamostragem de
+animais inteiros; a cobertura conformal também considera o pior erro de cada
+animal. Alterar modelo, calibração ou limites depois desse acesso exige outro
+teste independente.
+
+Passar no gate gera apenas `technical_review_recommended`. O relatório continua
+com `commercial_use_allowed: false` e exige revisão jurídica, validação externa,
+segurança operacional e aprovação humana. Nenhuma etapa estatística concede
+autorização comercial automaticamente.
+
 ## Gate de promoção
 
 Um pacote comercial futuro deve usar outro `model_id`, outro descritor e outro

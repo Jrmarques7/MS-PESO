@@ -27,6 +27,12 @@ def save_json(path: str | Path, payload: dict[str, Any]) -> None:
         json.dump(payload, file, indent=2, ensure_ascii=False, allow_nan=True)
 
 
+def save_json_exclusive(path: str | Path, payload: dict[str, Any]) -> None:
+    """Cria um relatório JSON sem permitir sobrescrita ou corrida de acesso."""
+    with Path(path).open("x", encoding="utf-8") as file:
+        json.dump(payload, file, indent=2, ensure_ascii=False, allow_nan=False)
+
+
 def save_predictions(
     path: str | Path,
     rows: list[dict[str, str]],
@@ -66,5 +72,54 @@ def save_predictions(
                     "weight_kg": f"{target:.4f}",
                     "predicted_weight_kg": f"{prediction:.4f}",
                     "error_kg": f"{prediction - target:.4f}",
+                }
+            )
+
+
+def save_interval_predictions(
+    path: str | Path,
+    rows: list[dict[str, str]],
+    *,
+    targets: Sequence[float],
+    predictions: Sequence[float],
+    indices: Sequence[int],
+    radius_kg: float,
+) -> None:
+    """Persiste predições de teste com o intervalo conformal congelado."""
+    if not (len(targets) == len(predictions) == len(indices)):
+        raise ValueError("targets, predictions e indices devem ter o mesmo tamanho")
+    with Path(path).open("w", encoding="utf-8", newline="") as file:
+        writer = csv.DictWriter(
+            file,
+            fieldnames=[
+                "image_path",
+                "animal_id",
+                "event_id",
+                "weight_kg",
+                "predicted_weight_kg",
+                "error_kg",
+                "interval_lower_kg",
+                "interval_upper_kg",
+                "interval_covered",
+            ],
+        )
+        writer.writeheader()
+        for index, target, prediction in zip(
+            indices, targets, predictions, strict=True
+        ):
+            row = rows[index]
+            writer.writerow(
+                {
+                    "image_path": row["image_path"],
+                    "animal_id": row["animal_id"],
+                    "event_id": row["event_id"],
+                    "weight_kg": f"{target:.4f}",
+                    "predicted_weight_kg": f"{prediction:.4f}",
+                    "error_kg": f"{prediction - target:.4f}",
+                    "interval_lower_kg": f"{prediction - radius_kg:.4f}",
+                    "interval_upper_kg": f"{prediction + radius_kg:.4f}",
+                    "interval_covered": str(
+                        abs(prediction - target) <= radius_kg
+                    ).lower(),
                 }
             )

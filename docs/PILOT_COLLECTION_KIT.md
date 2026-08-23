@@ -194,6 +194,44 @@ contém `calibration.json`, `predictions_calibration.csv` e
 `resolved_calibration_manifest.csv`. Nenhuma imagem ou métrica de `test` é
 produzida, e o modelo permanece `not_promoted`.
 
+## Abrir o teste uma única vez
+
+Calcule também o hash do relatório de calibração:
+
+```powershell
+(Get-FileHash `
+  artifacts/commercial_calibration_v001/calibration.json `
+  -Algorithm SHA256).Hash.ToLower()
+```
+
+Preencha os dois hashes e todos os limites marcados como
+`REPLACE_BEFORE_OPENING_TEST` em
+`configs/efficientnet_b0_commercial_evaluation.yaml`. Esses limites precisam
+vir do uso operacional e ser aprovados antes de qualquer resultado de teste.
+Em seguida, execute uma única vez:
+
+```powershell
+python -m ms_peso.evaluate_commercial `
+  --config configs/efficientnet_b0_commercial_evaluation.yaml
+```
+
+Antes de tocar nas imagens, o processo recusa calibração com intervalo largo
+demais, quantidade insuficiente de animais, hashes divergentes ou critérios
+incompletos. Quando a abertura é permitida, cria de forma atômica o recibo
+`artifacts/commercial_test_access/v001.json`. A existência desse recibo bloqueia
+outra tentativa, inclusive com diretório de resultados diferente.
+
+O teste produz métricas pontuais por imagem, métricas balanceadas por animal
+com bootstrap de 95%, cobertura conformal com intervalo de Wilson,
+`predictions_test.csv` e o relatório final. Os limites de confiança, e não só
+os valores pontuais, determinam o gate técnico. Uma falha consome o teste e não
+autoriza ajustar limites usando seus resultados; um novo candidato exige teste
+independente.
+
+Mesmo uma passagem completa gera apenas recomendação para revisão. Direitos,
+domínio externo, segurança operacional e aprovação humana permanecem
+obrigatórios, e `commercial_use_allowed` continua `false`.
+
 ## Gate antes do treinamento
 
 Nenhuma imagem entra no candidato comercial enquanto a auditoria não estiver
