@@ -1,0 +1,2 @@
+authorization_id,farm_id,status,effective_from,effective_until,allows_model_training,allows_commercial_use,allows_data_sharing,document_reference,notes
+auth_farm_001,farm_001,approved,2026-08-01,,true,true,false,secure://authorizations/auth_farm_001,EXEMPLO_REMOVER_NAO_SUBSTITUI_DOCUMENTO_JURIDICO

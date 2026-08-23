@@ -1,0 +1,40 @@
+schema_version: 1
+policy_id: nelore-commercial-pilot
+policy_version: "1"
+
+required_columns:
+  - image_path
+  - animal_id
+  - event_id
+  - weight_kg
+  - view
+  - breed
+  - sex
+  - farm_id
+  - lot_id
+  - captured_at
+  - weighed_at
+  - camera_id
+  - scale_id
+  - quality
+  - scale_marker
+  - authorization_id
+  - commercial_training_allowed
+  - notes
+
+allowed_views:
+  - left
+allowed_breeds:
+  - nelore
+  - nelore_cross
+allowed_sexes:
+  - male
+  - female
+
+weight_kg:
+  min: 100.0
+  max: 1000.0
+max_capture_weight_delta_minutes: 30
+required_quality: accepted
+require_scale_marker: true
+require_commercial_training_rights: true

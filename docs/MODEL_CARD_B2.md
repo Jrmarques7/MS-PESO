@@ -6,6 +6,7 @@
 - versão do pacote: `1`;
 - estado: experimental;
 - pronto para produção: não;
+- uso comercial autorizado: não;
 - arquitetura: EfficientNet-B0 com pesos iniciais ImageNet;
 - entrada: uma imagem RGB lateral esquerda, redimensionada para 224 × 224;
 - saída: estimativa escalar de peso vivo em quilogramas;
@@ -25,6 +26,12 @@ locais e demonstrações claramente identificadas como experimentais.
 - substituir balança aferida;
 - operar silenciosamente fora do protocolo de captura;
 - apresentar a saída como medição certificada ou modelo de produção.
+- incorporar este checkpoint a produto ou serviço comercial.
+
+O bloqueio comercial decorre dos pesos iniciais ImageNet-1K e da ausência de
+licença comercial explícita do CowDB. O B2 é somente um artefato de pesquisa e
+não será promovido; o candidato comercial será treinado separadamente com
+pesos aleatórios e dados próprios ou expressamente licenciados.
 
 ## Dados de desenvolvimento
 

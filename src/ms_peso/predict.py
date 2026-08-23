@@ -66,6 +66,8 @@ def build_prediction_payload(
             "checkpoint_sha256": descriptor.checkpoint_sha256,
             "status": descriptor.status,
             "production_ready": descriptor.production_ready,
+            "commercial_use_allowed": descriptor.commercial_use_allowed,
+            "commercial_blockers": list(descriptor.commercial_blockers),
             "training_dataset": descriptor.dataset,
             "training_breed": descriptor.breed,
             "device": device,

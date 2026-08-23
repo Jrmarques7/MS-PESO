@@ -38,3 +38,10 @@ data/processed/    manifesto pronto para experimento
 
 Nunca edite `raw` para corrigir um exemplo. Registre a exclusão ou correção em
 um novo manifesto processado.
+
+## Coleta piloto própria
+
+Os modelos em `data/templates/` iniciam o manifesto da coleta e o registro de
+autorizações. Copie-os para `data/interim/`, remova as linhas de exemplo e não
+versione documentos assinados ou dados pessoais. A política completa e o
+comando de auditoria estão em `docs/PILOT_COLLECTION_KIT.md`.

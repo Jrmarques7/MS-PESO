@@ -17,6 +17,8 @@ def descriptor(tmp_path: Path) -> ModelDescriptor:
         model_version="1",
         status="experimental",
         production_ready=False,
+        commercial_use_allowed=False,
+        commercial_blockers=("Apenas pesquisa.",),
         architecture="efficientnet_b0",
         checkpoint_path=tmp_path / "model.pt",
         checkpoint_sha256="a" * 64,
@@ -91,6 +93,7 @@ def test_payload_marks_experimental_model(tmp_path: Path) -> None:
     assert payload["quality_check_status"] == "passed"
     assert payload["quality"]["rejection_reasons"] == []
     assert payload["model"]["production_ready"] is False
+    assert payload["model"]["commercial_use_allowed"] is False
     assert payload["warnings"] == ["Não validado para Nelore."]
 
 
@@ -125,6 +128,9 @@ model_id: b2-test
 model_version: "1"
 status: experimental
 production_ready: false
+commercial_use_allowed: false
+commercial_blockers:
+  - Apenas pesquisa.
 architecture: efficientnet_b0
 checkpoint:
   path: model.pt

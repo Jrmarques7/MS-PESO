@@ -23,8 +23,10 @@ linhas do componente.
 | `train.py` | somente orquestrar o caso de uso de treinamento |
 | `model_package.py` | validar identidade, integridade e domínio do artefato |
 | `image_quality.py` | medir a captura e aplicar uma política de qualidade |
+| `collection.py` | auditar metadados, direitos e consistência da coleta |
 | `inference.py` | carregar o modelo congelado e estimar uma imagem |
 | `predict.py` | somente orquestrar a inferência pela linha de comando |
+| `validate_collection.py` | somente orquestrar a auditoria da coleta |
 | `importers/` | converter uma fonte externa para o contrato MS-PESO |
 | futuros módulos de inferência | carregar o artefato e produzir estimativas |
 | futuros módulos de coleta | adquirir imagens e metadados de campo |

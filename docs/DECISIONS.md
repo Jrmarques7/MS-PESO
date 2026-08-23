@@ -1,5 +1,35 @@
 # Registro de decisões
 
+## 2026-08-22 — Separar irreversivelmente B2 e candidato comercial
+
+**Decisão:** classificar o B2 como modelo somente de pesquisa, com
+`commercial_use_allowed: false` no descritor e na saída de inferência. O futuro
+candidato comercial terá outro identificador, inicialização aleatória e dados
+próprios ou expressamente licenciados.
+
+**Motivo:** o B2 deriva de pesos ImageNet-1K e foi ajustado no CowDB; as
+permissões comerciais necessárias não estão confirmadas. O código BSD da
+torchvision não resolve sozinho os direitos dos pesos e dos dados.
+
+**Consequência:** o B2 não será distribuído em produto, usado para destilação
+nem para gerar pseudorrótulos comerciais. Uma promoção futura exige inventário
+de proveniência, autorizações, validação em Nelore e revisão jurídica.
+
+## 2026-08-22 — Exigir autorização rastreável na coleta piloto
+
+**Decisão:** nenhuma imagem própria entrará na trilha comercial sem vínculo a
+uma autorização vigente da mesma fazenda, permitindo treinamento de modelos e
+uso comercial. A coleta será auditada por política versionada antes do treino.
+
+**Motivo:** ser proprietário do código ou ter capturado a foto não documenta,
+por si só, todo o escopo de uso acordado com a fazenda. O registro separado
+permite bloquear autorizações ausentes, vencidas, revogadas ou insuficientes.
+
+**Consequência:** documentos assinados ficam fora do Git em armazenamento
+seguro; o manifesto guarda somente `authorization_id` e a referência controlada.
+O auditor também verifica peso, horários, marcador, unicidade, imagem e
+qualidade técnica, mas não substitui revisão jurídica ou inspeção de pose.
+
 ## 2026-08-22 — Bloquear inferência quando a qualidade técnica falhar
 
 **Decisão:** aplicar antes da inferência uma política versionada que rejeita

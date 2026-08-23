@@ -76,6 +76,8 @@ Os critérios completos estão em
   diferença inferior a 0,03 kg.
 - [x] Gate técnico de qualidade impede inferência em imagens pequenas,
   verticais, excessivamente escuras, claras, saturadas ou borradas.
+- [x] B2 marcado como somente pesquisa e separado da futura trilha comercial.
+- [x] Kit de coleta piloto criado com templates, direitos e auditor automático.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -277,6 +279,8 @@ python -m ms_peso.train --config configs/efficientnet_b0_balanced.yaml
 - [Execução no Google Colab](docs/COLAB.md)
 - [Princípios de engenharia](docs/ENGINEERING_PRINCIPLES.md)
 - [Model card do B2](docs/MODEL_CARD_B2.md)
+- [Proveniência e caminho comercial](docs/MODEL_PROVENANCE.md)
+- [Kit de coleta piloto](docs/PILOT_COLLECTION_KIT.md)
 - [Datasets e auditoria](docs/DATASETS.md)
 - [Fontes brasileiras de dados](docs/BRAZILIAN_DATA_SOURCES.md)
 

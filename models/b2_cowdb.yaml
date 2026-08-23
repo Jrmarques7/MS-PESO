@@ -3,6 +3,10 @@ model_id: b2-cowdb-efficientnet-b0
 model_version: "1"
 status: experimental
 production_ready: false
+commercial_use_allowed: false
+commercial_blockers:
+  - Pesos iniciais derivados do ImageNet-1K sem autorização comercial confirmada.
+  - CowDB sem licença comercial explícita confirmada.
 architecture: efficientnet_b0
 
 checkpoint:

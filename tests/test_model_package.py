@@ -18,6 +18,8 @@ def write_descriptor(tmp_path: Path, checkpoint_sha256: str) -> Path:
         "model_version": "1",
         "status": "experimental",
         "production_ready": False,
+        "commercial_use_allowed": False,
+        "commercial_blockers": ["Apenas pesquisa."],
         "architecture": "efficientnet_b0",
         "checkpoint": {"path": "model.pt", "sha256": checkpoint_sha256},
         "input": {"image_size": 16, "view": "left"},
@@ -41,6 +43,8 @@ def test_loads_and_verifies_model_descriptor(tmp_path: Path) -> None:
     assert descriptor.model_id == "test-model"
     assert descriptor.image_size == 16
     assert descriptor.checkpoint_path == checkpoint
+    assert descriptor.commercial_use_allowed is False
+    assert descriptor.commercial_blockers == ("Apenas pesquisa.",)
 
 
 def test_rejects_checkpoint_with_different_hash(tmp_path: Path) -> None:

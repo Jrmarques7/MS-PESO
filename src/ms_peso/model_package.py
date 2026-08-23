@@ -17,6 +17,8 @@ class ModelDescriptor:
     model_version: str
     status: str
     production_ready: bool
+    commercial_use_allowed: bool
+    commercial_blockers: tuple[str, ...]
     architecture: str
     checkpoint_path: Path
     checkpoint_sha256: str
@@ -64,6 +66,21 @@ def load_model_descriptor(path: str | Path) -> ModelDescriptor:
     production_ready = config.get("production_ready")
     if not isinstance(production_ready, bool):
         raise ValueError("production_ready deve ser booleano.")
+    commercial_use_allowed = config.get("commercial_use_allowed")
+    if not isinstance(commercial_use_allowed, bool):
+        raise ValueError("commercial_use_allowed deve ser booleano.")
+    commercial_blockers = config.get("commercial_blockers")
+    if (
+        not isinstance(commercial_blockers, list)
+        or any(
+            not isinstance(item, str) or not item.strip()
+            for item in commercial_blockers
+        )
+        or (not commercial_use_allowed and not commercial_blockers)
+    ):
+        raise ValueError(
+            "commercial_blockers deve explicar todo bloqueio de uso comercial."
+        )
     limitations = config.get("limitations")
     if (
         not isinstance(limitations, list)
@@ -80,6 +97,8 @@ def load_model_descriptor(path: str | Path) -> ModelDescriptor:
         model_version=_required_text(config, "model_version"),
         status=_required_text(config, "status"),
         production_ready=production_ready,
+        commercial_use_allowed=commercial_use_allowed,
+        commercial_blockers=tuple(item.strip() for item in commercial_blockers),
         architecture=_required_text(config, "architecture"),
         checkpoint_path=checkpoint_path,
         checkpoint_sha256=checkpoint_sha256,

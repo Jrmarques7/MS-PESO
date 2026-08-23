@@ -94,3 +94,8 @@ período. Ele é mais informativo sobre uso real que uma divisão aleatória.
 - registrar correções de rótulos;
 - definir licença antes de publicar imagens ou modelos.
 
+Para a coleta piloto destinada à trilha comercial, também são obrigatórios
+`authorization_id`, `captured_at`, `weighed_at`, `camera_id`, `scale_id`,
+`commercial_training_allowed` e a vinculação ao registro de autorizações. Os
+templates, regras e auditor automático estão em `PILOT_COLLECTION_KIT.md`.
+
