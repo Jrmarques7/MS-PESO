@@ -64,6 +64,8 @@ Os critérios completos estão em
   MAPE, viés e R² apesar de MAE médio 0,46 kg menor.
 - [x] Fusão RGB + profundidade testada; não promovida após piorar o MAE em
   9,06 kg no bootstrap pareado contra o B2.
+- [x] Recorte e máscara guiados por profundidade avaliados; a máscara chegou a
+  MAE de 28,16 kg, mas foi rejeitada após variar até 45,00 kg entre seeds.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -176,7 +178,11 @@ python -m ms_peso.train --config configs/convnext_tiny_rgb.yaml
 
 O carregador experimental RGB + profundidade pode ser reproduzido com
 `configs/efficientnet_b0_rgb_depth.yaml`. A fusão da cena bruta não superou o
-B2; o próximo uso da profundidade será recorte/segmentação antes da regressão.
+B2; recorte e máscara foram avaliados separadamente na etapa seguinte.
+
+O preparador `python -m ms_peso.prepare_depth_crops` estima o fundo somente com
+o treino e gera recortes ou canvases mascarados com trava de qualidade. Nem o
+recorte nem a máscara superaram a estabilidade do B2 em três seeds.
 
 A variante experimental com amostragem moderada por faixa obteve MAE pontual
 de 32,55 kg:

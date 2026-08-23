@@ -1,5 +1,20 @@
 # Registro de decisões
 
+## 2026-08-22 — Não promover recorte nem máscara guiados por profundidade
+
+**Decisão:** manter B2 como baseline oficial. Preservar o preparador de caixas
+para pesquisa, mas não promover A1 ou A2.
+
+**Motivo:** A1 reduziu o viés, porém piorou MAE, RMSE e MAPE na seed 42. A2
+teve excelente resultado pontual na seed 42, mas suas três execuções variaram
+de 28,16 a 45,00 kg de MAE. A média de 36,97 ± 8,44 kg ficou pior e muito mais
+instável que os 32,10 ± 2,43 kg do B2.
+
+**Consequência:** não continuar refinando limiares sobre o mesmo teste. A
+próxima ablação deve adicionar informação independente — outra vista ou
+geometria explicitamente segmentada — sem usar o teste para selecionar regras
+de pré-processamento.
+
 ## 2026-08-22 — Não fundir a cena de profundidade bruta ao RGB
 
 **Decisão:** rejeitar o A6 de fusão global RGB + profundidade e manter o B2

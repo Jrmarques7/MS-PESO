@@ -255,6 +255,87 @@ python -m ms_peso.prepare_manifest \
 python -m ms_peso.train --config configs/efficientnet_b0_rgb_depth.yaml
 ```
 
+### A1-CowDB-001 — recorte guiado por profundidade
+
+- fundo de profundidade estimado exclusivamente com os 109 animais de treino;
+- valor máximo observado por pixel usado como aproximação do fundo estático;
+- primeiro plano definido por diferença mínima de 150 mm;
+- caixa do maior componente com margem de 8%;
+- trava de qualidade: caixa deve ocupar ao menos 50% da imagem;
+- RGB recortado e redimensionado para 224 × 224;
+- modelo, divisão, seed e hiperparâmetros iguais ao B2.
+
+O primeiro protótipo com percentil 90 gerou três recortes parciais e foi
+rejeitado antes do treinamento. Com o máximo por pixel, os 154 animais passaram
+pela trava; as caixas ocuparam de 58,8% a 78,8% da cena e os casos extremos
+foram inspecionados visualmente.
+
+| Métrica | A1 | B2 | Diferença A1 − B2 |
+|---|---:|---:|---:|
+| MAE | 37,37 kg | 34,21 kg | +3,15 kg |
+| RMSE | 53,58 kg | 51,06 kg | +2,52 kg |
+| MAPE | 10,00% | 9,39% | +0,61 p.p. |
+| Viés | +0,67 kg | +7,07 kg | -6,39 kg |
+| R² | 0,487 | 0,534 | pior |
+
+Os intervalos pareados de erro cruzaram zero, mas a probabilidade bootstrap de
+A1 ter MAE menor foi somente 11,9%. O viés melhorou de forma sustentada. O
+recorte não foi repetido em outras seeds porque piorou todas as métricas de erro
+e altera a escala aparente ao ampliar caixas diferentes para o mesmo tamanho.
+
+### A2-CowDB — máscara retangular sem alterar escala
+
+O A2 reutiliza exatamente as caixas validadas do A1, mas mantém o canvas RGB
+original. Somente a região externa à caixa é neutralizada com a média ImageNet;
+assim o tamanho aparente do animal em relação à câmera é preservado.
+
+Na seed 42, o A2 produziu o melhor resultado pontual do projeto:
+
+| Métrica | A2 seed 42 | B2 seed 42 |
+|---|---:|---:|
+| MAE | 28,16 kg | 34,21 kg |
+| RMSE | 42,37 kg | 51,06 kg |
+| MAPE | 7,63% | 9,39% |
+| Viés | +1,28 kg | +7,07 kg |
+| R² | 0,679 | 0,534 |
+
+No bootstrap pareado, A2 menos B2 teve diferença de MAE de -6,05 kg, IC95%
+de -13,06 a +0,88 kg, e 95,7% de probabilidade de MAE menor. O intervalo ainda
+cruza zero. O MAE dos dois animais abaixo de 350 kg caiu para 106,77 kg, uma
+melhora importante, porém ainda inadequada.
+
+As repetições revelaram que o ganho não é estável:
+
+| Métrica | B2 uniforme | A2 máscara | Diferença A2 − B2 |
+|---|---:|---:|---:|
+| MAE | 32,10 ± 2,43 kg | 36,97 ± 8,44 kg | +4,86 kg |
+| RMSE | 49,11 ± 4,36 kg | 51,65 ± 9,23 kg | +2,54 kg |
+| MAPE | 8,84 ± 0,73% | 9,74 ± 1,96% | +0,90 p.p. |
+| Viés | +7,05 ± 2,29 kg | -0,44 ± 6,07 kg | -7,48 kg |
+| R² | 0,57 ± 0,07 | 0,51 ± 0,17 | -0,05 |
+
+As seeds 42, 43 e 44 do A2 tiveram MAE de 28,16, 37,74 e 45,00 kg. A máscara
+quase zera o viés médio, mas aumenta muito a variabilidade e piora o erro médio.
+Ela não é promovida; B2 continua como baseline oficial.
+
+Reprodução dos dados derivados e dos dois experimentos:
+
+```bash
+python -m ms_peso.prepare_depth_crops \
+  --manifest data/processed/rgb_depth_manifest.csv \
+  --image-root data \
+  --output-dir data/interim/cowdb_depth_crops \
+  --output-manifest data/processed/depth_crop_manifest.csv
+python -m ms_peso.prepare_depth_crops \
+  --manifest data/processed/rgb_depth_manifest.csv \
+  --image-root data \
+  --output-dir data/interim/cowdb_depth_box_masks \
+  --output-manifest data/processed/depth_box_mask_manifest.csv \
+  --output-mode masked_canvas
+python -m ms_peso.train --config configs/efficientnet_b0_depth_crop.yaml
+python -m ms_peso.train --config configs/efficientnet_b0_depth_box_mask.yaml
+```
+
 ## Ablações previstas
 
 | ID | Mudança em relação a B1 |

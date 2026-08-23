@@ -113,6 +113,12 @@ python -m ms_peso.import_cowdb \
   --include-depth
 ```
 
+Depois de dividir esse manifesto, recortes ou máscaras retangulares podem ser
+gerados com `python -m ms_peso.prepare_depth_crops`. O fundo é calculado apenas
+com linhas `train`; imagens brutas não são modificadas. A ferramenta exige uma
+caixa mínima de 50% da cena e registra parâmetros e coordenadas no manifesto
+derivado. Esses derivados são experimentais e não substituem o manifesto RGB.
+
 O importador lê a grafia original `live weithg`, preserva as medidas corporais
 como metadados e produz identificadores isolados (`cowdb_001`, etc.). Ele falha
 se houver peso sem imagem, imagem sem peso, vista desconhecida ou arquivo fora
