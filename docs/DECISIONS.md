@@ -1,5 +1,17 @@
 # Registro de decisões
 
+## 2026-08-22 — Adiar todos os pedidos externos de dados
+
+**Decisão:** não enviar neste momento solicitações à UFGD/Embrapa sobre as
+bases UAV de 2025 e 2026 nem à UNESP sobre a base Kinect/3D.
+
+**Motivo:** decisão explícita do responsável pelo projeto. O adiamento controla
+dependências externas sem alterar a prioridade técnica das fontes.
+
+**Consequência:** nenhuma mensagem será preparada ou enviada automaticamente.
+O trabalho segue nas tarefas locais independentes de novos dados: inferência,
+qualidade de captura, pacote de coleta piloto e documentação do modelo atual.
+
 ## 2026-08-22 — Rejeitar fusão da altura PLY no gate de validação
 
 **Decisão:** preservar a leitura e a auditoria de nuvens PLY, mas não treinar

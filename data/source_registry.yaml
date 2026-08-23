@@ -73,9 +73,9 @@ sources:
       flights: 13
       altitude_m: 10
     weight_label_status: reported_in_publication_not_present_in_linked_archive
-    access: public_claim_not_reproduced_request_authors
+    access: request_deferred_by_project_owner
     dataset_license: not_confirmed
-    status: publication_claim_requires_clarification
+    status: request_deferred_by_project_owner
     urls:
       publication: https://www.alice.cnptia.embrapa.br/alice/handle/doc/1185904
       linked_public_repository: https://github.com/EvertonTetila/NelloreBeefCattleDataset
@@ -109,10 +109,10 @@ sources:
       remaining_animals_average_relative_error_percent: 2.02
       abstract_average_relative_error_percent_approx: 2.29
       average_weight_kg_approx: 360
-    access: request_authors
+    access: request_deferred_by_project_owner
     dataset_license: not_confirmed
     article_license: CC_BY_NC_ND_4_0
-    status: request_required
+    status: request_deferred_by_project_owner
     urls:
       embrapa_record: https://www.alice.cnptia.embrapa.br/alice/handle/doc/1187153
       full_text: https://www.scitepress.org/publishedPapers/2026/149255/pdf/index.html

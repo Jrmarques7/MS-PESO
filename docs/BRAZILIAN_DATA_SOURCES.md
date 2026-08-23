@@ -19,9 +19,10 @@ supervisionado de regressão.
 | P2 | Embrapa facial | identificação individual | não | disponibilidade a confirmar/solicitar |
 | P3 | Wikimedia Commons | detecção e diversidade visual | não | público, licença por arquivo |
 
-O pedido formal dos dados 3D da UNESP foi adiado por decisão do responsável pelo
-projeto. O trabalho local continua com as fontes públicas e com a preparação do
-pipeline; o adiamento não deve ser interpretado como descarte da fonte.
+Todos os pedidos formais de dados foram adiados por decisão do responsável pelo
+projeto: UNESP Kinect/3D, base UAV de peso de 2025 e nuvem de pontos UAV de
+2026. O trabalho local continua com as fontes já disponíveis e com a preparação
+do pipeline; o adiamento não deve ser interpretado como descarte das fontes.
 
 Elas não devem ser concatenadas diretamente: UAV RGB dorsal e Kinect 3D têm
 geometria, resolução e protocolo distintos. Cada modalidade terá baseline e
@@ -226,13 +227,11 @@ mesmo split, mesmo quando os pesos e as datas forem diferentes.
 
 ## Próximas ações
 
-1. Solicitar aos autores os dados e o protocolo completo do estudo de nuvem de
-   pontos de 2026, incluindo o número exato de animais avaliados.
-2. Pedir aos autores a correção ou o endereço efetivo da base de peso de 2025,
-   pois o link público conhecido leva ao ZIP longitudinal sem pesos.
-3. Executar o inventariador após copiar esse ZIP para armazenamento com espaço
-   suficiente e extrair a fonte.
-4. Enviar posteriormente a solicitação formal à UNESP com a lista de campos
-   acima.
-5. Manter as fontes auxiliares fora da regressão até existir
-   uma estratégia experimental específica para cada fonte.
+1. Manter os três pedidos P0 adiados até decisão explícita do responsável pelo
+   projeto; não preparar nem enviar mensagens automaticamente.
+2. Executar o inventariador se o ZIP público longitudinal for copiado para um
+   armazenamento com espaço suficiente e extraído.
+3. Manter as fontes auxiliares fora da regressão até existir uma estratégia
+   experimental específica para cada fonte.
+4. Avançar localmente no fluxo de inferência, controle de qualidade da captura
+   e preparação do piloto com pesagem vinculada.
