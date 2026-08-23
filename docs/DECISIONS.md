@@ -1,5 +1,19 @@
 # Registro de decisões
 
+## 2026-08-22 — Não promover a fusão lateral + superior
+
+**Decisão:** manter B2 como baseline oficial e preservar A5 apenas como suporte
+multivista reproduzível. Não repetir esta configuração nas seeds 43 e 44.
+
+**Motivo:** no mesmo teste de 20 animais, A5 piorou o MAE de 34,21 para 37,91
+kg, o MAPE de 9,39% para 10,32% e o viés de +7,07 para +18,54 kg. No bootstrap
+pareado, a chance de MAE menor foi 18,8%. A piora de viés de +11,47 kg teve
+IC95% de +2,57 a +19,38 kg, inteiramente acima de zero.
+
+**Consequência:** uma vista adicional não será presumida útil por si só. O
+próximo avanço deve priorizar escala/geometria calibrada ou dados do domínio
+brasileiro, evitando selecionar novas regras sobre o mesmo teste pequeno.
+
 ## 2026-08-22 — Não promover recorte nem máscara guiados por profundidade
 
 **Decisão:** manter B2 como baseline oficial. Preservar o preparador de caixas

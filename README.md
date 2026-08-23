@@ -66,6 +66,8 @@ Os critérios completos estão em
   9,06 kg no bootstrap pareado contra o B2.
 - [x] Recorte e máscara guiados por profundidade avaliados; a máscara chegou a
   MAE de 28,16 kg, mas foi rejeitada após variar até 45,00 kg entre seeds.
+- [x] Fusão lateral + superior avaliada; não promovida por piorar MAE, MAPE e
+  principalmente o viés em relação ao B2 na comparação pareada.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -90,8 +92,8 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
-O ambiente local atual ainda não possui PyTorch funcional; portanto o primeiro
-treinamento deverá ser feito após a instalação acima ou no Colab.
+O ambiente local validado usa Python 3.12, PyTorch 2.12.1 com CUDA 13.0 e uma
+NVIDIA GeForce RTX 3060 Ti. A instalação também pode ser feita no Colab.
 
 ## Preparar o manifesto
 
@@ -183,6 +185,30 @@ B2; recorte e máscara foram avaliados separadamente na etapa seguinte.
 O preparador `python -m ms_peso.prepare_depth_crops` estima o fundo somente com
 o treino e gera recortes ou canvases mascarados com trava de qualidade. Nem o
 recorte nem a máscara superaram a estabilidade do B2 em três seeds.
+
+O experimento multivista combina a lateral e a superior do mesmo evento em uma
+única amostra. As duas vistas passam por um EfficientNet-B0 compartilhado:
+
+```bash
+python -m ms_peso.import_cowdb \
+  --dataset-root data/raw/cowdb \
+  --image-root data \
+  --output data/interim/cowdb_left_top_rows.csv \
+  --views left top
+python -m ms_peso.prepare_multi_view_manifest \
+  --input data/interim/cowdb_left_top_rows.csv \
+  --output data/interim/cowdb_left_top_paired.csv \
+  --image-root data
+python -m ms_peso.prepare_manifest \
+  --input data/interim/cowdb_left_top_paired.csv \
+  --output data/processed/left_top_manifest.csv \
+  --image-root data \
+  --check-images \
+  --seed 42
+python -m ms_peso.train --config configs/efficientnet_b0_left_top.yaml
+```
+
+Essa configuração foi preservada para reprodução, mas não substituiu o B2.
 
 A variante experimental com amostragem moderada por faixa obteve MAE pontual
 de 32,55 kg:

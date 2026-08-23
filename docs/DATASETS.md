@@ -119,6 +119,12 @@ com linhas `train`; imagens brutas não são modificadas. A ferramenta exige uma
 caixa mínima de 50% da cena e registra parâmetros e coordenadas no manifesto
 derivado. Esses derivados são experimentais e não substituem o manifesto RGB.
 
+Para a entrada multivista, importe `--views left top` e execute
+`python -m ms_peso.prepare_multi_view_manifest`. O preparador exige exatamente
+uma imagem de cada vista por animal/evento, confirma peso e partição iguais e
+grava o caminho superior em `secondary_image_path`. A divisão continua sendo
+feita depois do pareamento, por animal, com `prepare_manifest`.
+
 O importador lê a grafia original `live weithg`, preserva as medidas corporais
 como metadados e produz identificadores isolados (`cowdb_001`, etc.). Ele falha
 se houver peso sem imagem, imagem sem peso, vista desconhecida ou arquivo fora
@@ -136,3 +142,7 @@ verificadas com Pillow. A divisão reproduzível com seed 42 ficou assim:
 | teste | 20 | 20 | 243 kg | 450,8 kg | 573 kg |
 
 Não há animal compartilhado entre partições.
+
+O manifesto lateral + superior também contém 154 eventos e conserva exatamente
+os mesmos 109/25/20 animais em cada partição. Seu SHA-256 é
+`cac0b63ba20aa3853f5c43c679b7bca92761780118905ba5386c8d27392a65f1`.

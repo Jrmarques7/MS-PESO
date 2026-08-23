@@ -49,6 +49,32 @@ class RGBDepthEfficientNet(nn.Module):
         return self.regressor(torch.cat((rgb_features, depth_features), dim=1))
 
 
+class MultiViewEfficientNet(nn.Module):
+    """Codifica duas vistas RGB com o mesmo EfficientNet e funde seus vetores."""
+
+    def __init__(self, *, pretrained: bool, dropout: float) -> None:
+        super().__init__()
+        weights = EfficientNet_B0_Weights.DEFAULT if pretrained else None
+        self.encoder = efficientnet_b0(weights=weights)
+        number_of_features = self.encoder.classifier[1].in_features
+        self.encoder.classifier = nn.Identity()
+        self.regressor = nn.Sequential(
+            nn.Dropout(dropout), nn.Linear(number_of_features * 2, 1)
+        )
+
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+        if inputs.ndim != 4 or inputs.shape[1] != 6:
+            raise ValueError("MultiViewEfficientNet espera tensores N×6×H×W.")
+        batch_size = inputs.shape[0]
+        features = self.encoder(
+            torch.cat((inputs[:, :3], inputs[:, 3:6]), dim=0)
+        )
+        primary_features = features[:batch_size]
+        secondary_features = features[batch_size:]
+        combined_features = torch.cat((primary_features, secondary_features), dim=1)
+        return self.regressor(combined_features)
+
+
 def build_model(
     architecture: str = "resnet18",
     *,
@@ -79,8 +105,10 @@ def build_model(
         return model
     if architecture == "efficientnet_b0_rgb_depth":
         return RGBDepthEfficientNet(pretrained=pretrained, dropout=dropout)
+    if architecture == "efficientnet_b0_multiview":
+        return MultiViewEfficientNet(pretrained=pretrained, dropout=dropout)
     raise ValueError(
         f"Arquitetura não implementada: {architecture}. "
         "Use resnet18, efficientnet_b0, convnext_tiny ou "
-        "efficientnet_b0_rgb_depth."
+        "efficientnet_b0_rgb_depth ou efficientnet_b0_multiview."
     )

@@ -13,7 +13,11 @@ from torch.utils.data import DataLoader, WeightedRandomSampler
 
 from ms_peso.artifacts import save_checkpoint, save_json, save_predictions
 from ms_peso.config import load_yaml_config
-from ms_peso.dataset import CattleWeightDataset, RGBDepthCattleWeightDataset
+from ms_peso.dataset import (
+    CattleWeightDataset,
+    MultiViewCattleWeightDataset,
+    RGBDepthCattleWeightDataset,
+)
 from ms_peso.evaluation import evaluate_model
 from ms_peso.manifest import (
     grouped_split,
@@ -48,6 +52,11 @@ def main() -> None:
 
     data_config = config["data"]
     depth_image_column = data_config.get("depth_image_column")
+    secondary_image_column = data_config.get("secondary_image_column")
+    if depth_image_column and secondary_image_column:
+        raise ValueError(
+            "Use somente depth_image_column ou secondary_image_column por execução."
+        )
     manifest_path = Path(data_config["manifest"])
     image_root = data_config.get("image_root")
     rows = read_manifest(manifest_path)
@@ -56,7 +65,11 @@ def main() -> None:
         manifest_path=manifest_path,
         image_root=image_root,
         check_images=True,
-        additional_image_columns=(depth_image_column,) if depth_image_column else (),
+        additional_image_columns=tuple(
+            column
+            for column in (depth_image_column, secondary_image_column)
+            if column
+        ),
     )
 
     selected_view = data_config.get("view")
@@ -109,6 +122,16 @@ def main() -> None:
                 split_rows[split],
                 depth_image_column=depth_image_column,
                 depth_max_mm=float(data_config["depth_max_mm"]),
+                training=split == "train",
+                **common_dataset_arguments,
+            )
+            for split in ("train", "val", "test")
+        }
+    elif secondary_image_column:
+        datasets = {
+            split: MultiViewCattleWeightDataset(
+                split_rows[split],
+                secondary_image_column=secondary_image_column,
                 training=split == "train",
                 **common_dataset_arguments,
             )

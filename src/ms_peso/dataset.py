@@ -70,6 +70,51 @@ class CattleWeightDataset(Dataset):
         return tensor, normalized_weight, index
 
 
+class MultiViewCattleWeightDataset(Dataset):
+    """Carrega duas vistas RGB sincronizadas como uma única amostra."""
+
+    def __init__(
+        self,
+        rows: list[dict[str, str]],
+        *,
+        manifest_path: str | Path,
+        image_root: str | Path | None,
+        secondary_image_column: str,
+        image_size: int,
+        training: bool,
+        target_mean: float,
+        target_std: float,
+    ) -> None:
+        self.rows = rows
+        self.manifest_path = Path(manifest_path)
+        self.image_root = image_root
+        self.secondary_image_column = secondary_image_column
+        self.transform = build_transform(image_size, training)
+        self.target_mean = target_mean
+        self.target_std = target_std
+
+    def __len__(self) -> int:
+        return len(self.rows)
+
+    def __getitem__(self, index: int):
+        row = self.rows[index]
+        primary_path = resolve_image_path(row, self.manifest_path, self.image_root)
+        secondary_path = resolve_manifest_path(
+            row,
+            self.secondary_image_column,
+            self.manifest_path,
+            self.image_root,
+        )
+        with Image.open(primary_path) as primary_image:
+            primary_tensor = self.transform(primary_image.convert("RGB"))
+        with Image.open(secondary_path) as secondary_image:
+            secondary_tensor = self.transform(secondary_image.convert("RGB"))
+        tensor = torch.cat((primary_tensor, secondary_tensor), dim=0)
+        weight = float(row["weight_kg"])
+        normalized_weight = (weight - self.target_mean) / self.target_std
+        return tensor, normalized_weight, index
+
+
 class RGBDepthTransform:
     """Aplica geometria sincronizada e normalização específica por modalidade."""
 

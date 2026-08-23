@@ -336,6 +336,55 @@ python -m ms_peso.train --config configs/efficientnet_b0_depth_crop.yaml
 python -m ms_peso.train --config configs/efficientnet_b0_depth_box_mask.yaml
 ```
 
+### A5-CowDB-001 — fusão lateral + superior
+
+- entrada: uma vista lateral esquerda e uma superior do mesmo animal/evento;
+- manifesto: 154 pares completos, SHA-256
+  `cac0b63ba20aa3853f5c43c679b7bca92761780118905ba5386c8d27392a65f1`;
+- divisão: os mesmos 109/25/20 animais do B2, sem duplicar animais como
+  amostras independentes;
+- modelo: um único EfficientNet-B0 compartilhado pelas duas vistas, com fusão
+  dos dois vetores globais antes da regressão;
+- seed 42: melhor época de validação 12; encerramento na época 19.
+
+| Métrica | A5 | B2 | Diferença A5 − B2 |
+|---|---:|---:|---:|
+| MAE | 37,91 kg | 34,21 kg | +3,70 kg |
+| RMSE | 53,09 kg | 51,06 kg | +2,03 kg |
+| MAPE | 10,32% | 9,39% | +0,93 p.p. |
+| Viés | +18,54 kg | +7,07 kg | +11,47 kg |
+| R² | 0,496 | 0,534 | pior |
+
+No bootstrap pareado de 10.000 iterações, a diferença de MAE teve IC95% de
+-4,71 a +11,84 kg e apenas 18,8% de probabilidade de A5 ser melhor. A piora de
+viés teve IC95% de +2,57 a +19,38 kg. Nos dois animais abaixo de 350 kg, o MAE
+continuou muito alto, em 133,84 kg; nos outros 18, foi 27,25 kg.
+
+**Decisão:** não promover nem repetir esta configuração em outras seeds. A
+segunda vista aumentou custo e superestimação sem evidência de ganho. O suporte
+multivista fica preservado para bases maiores ou protocolos calibrados.
+
+Reprodução:
+
+```bash
+python -m ms_peso.import_cowdb \
+  --dataset-root data/raw/cowdb \
+  --image-root data \
+  --output data/interim/cowdb_left_top_rows.csv \
+  --views left top
+python -m ms_peso.prepare_multi_view_manifest \
+  --input data/interim/cowdb_left_top_rows.csv \
+  --output data/interim/cowdb_left_top_paired.csv \
+  --image-root data
+python -m ms_peso.prepare_manifest \
+  --input data/interim/cowdb_left_top_paired.csv \
+  --output data/processed/left_top_manifest.csv \
+  --image-root data \
+  --check-images \
+  --seed 42
+python -m ms_peso.train --config configs/efficientnet_b0_left_top.yaml
+```
+
 ## Ablações previstas
 
 | ID | Mudança em relação a B1 |
@@ -344,7 +393,7 @@ python -m ms_peso.train --config configs/efficientnet_b0_depth_box_mask.yaml
 | A2 | fundo removido por máscara |
 | A3 | marcador de escala/câmera calibrada |
 | A4 | metadados: raça, sexo e idade |
-| A5 | fusão lateral + traseira/superior |
+| A5 | fusão lateral + superior — avaliada, não promovida |
 | A6 | RGB + profundidade |
 | A7 | amostragem moderada por faixa de peso |
 

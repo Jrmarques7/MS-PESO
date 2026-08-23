@@ -1,0 +1,30 @@
+project:
+  name: ms-peso-efficientnet-b0-depth-box-mask
+  seed: 42
+
+data:
+  manifest: data/processed/depth_box_mask_manifest.csv
+  image_root: data
+  view: left
+  image_size: 224
+  batch_size: 32
+  num_workers: 2
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  stratify_bins: 5
+
+model:
+  architecture: efficientnet_b0
+  pretrained: true
+  dropout: 0.20
+
+training:
+  epochs: 30
+  learning_rate: 0.0003
+  weight_decay: 0.0001
+  huber_delta: 1.0
+  patience: 7
+
+output:
+  directory: artifacts/efficientnet_b0_depth_box_mask
