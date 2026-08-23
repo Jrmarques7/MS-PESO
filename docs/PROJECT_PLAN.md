@@ -58,6 +58,9 @@ ou decisões em que um erro de peso possa causar dano.
    parte dessa diferença.
 6. A mediana de três a cinco bons quadros laterais de um vídeo é mais estável
    que a estimativa de um único quadro escolhido sem consenso.
+7. Uma trilha dorsal por drone, calibrada por altitude/escala ou reconstrução
+   3D, consegue estimar a distribuição e a evolução média de peso do lote sem
+   substituir inicialmente a estimativa individual lateral.
 
 ## 5. Critérios de sucesso
 
@@ -69,7 +72,7 @@ Os limites finais devem ser definidos com o usuário de campo. Para o piloto:
 - MAPE global inicial abaixo de 10%;
 - relatório de erro por faixa de peso, sexo, raça e origem;
 - teste externo por fazenda ou por período antes de declarar uso real;
-- toda predição rastreável até versão do modelo e protocolo de captura.
+- toda predição rastreável até versão do modelo e protocolo de captura;
 - seleção dos quadros feita sem consultar o peso real do evento;
 - limiar de divergência entre quadros definido antes de abrir o teste final;
 - resposta de vídeo rastreável até os instantes e notas dos quadros escolhidos.
@@ -123,6 +126,36 @@ R² será relatado, mas nunca utilizado sozinho como critério de sucesso.
 - segunda vista ou profundidade;
 - teste em outra fazenda, lote ou período.
 
+### M3-UAV — Drone dorsal experimental
+
+Esta trilha começa somente depois do piloto lateral e mantém dados, modelos,
+calibração e avaliação separados. Sua primeira finalidade é estimar a
+distribuição e a evolução média do lote. Peso individual por drone só será
+declarado quando o mesmo animal puder ser identificado e acompanhado com
+confiabilidade.
+
+- definir um protocolo de voo com drone, câmera, altitude, ângulo nadiral,
+  velocidade, sobreposição, resolução no solo, horário e clima registrados;
+- coletar imagens no mesmo evento da pesagem de referência e manter vínculo
+  verificável entre animal, voo, segmento e peso;
+- criar baseline dorsal RGB 2D usando escala derivada do voo;
+- comparar o baseline 2D com reconstrução 3D por Structure from Motion e volume
+  corporal, sem misturar suas entradas ou métricas;
+- detectar e segmentar cada bovino, rejeitando sobreposição, corpo cortado,
+  postura inadequada e identidade incerta;
+- rastrear animais entre quadros sem contar o mesmo indivíduo várias vezes na
+  estimativa do lote;
+- separar treino, validação, calibração e teste por animal, fazenda e evento de
+  voo conforme o objetivo de cada avaliação;
+- medir erro individual quando houver identificação e erro da média/distribuição
+  do lote quando o objetivo for agregado;
+- interromper a trilha 3D antes do treinamento se movimento, oclusão ou baixa
+  qualidade impedirem reconstrução corporal reproduzível;
+- usar outro `model_id`, manifesto e pacote; nenhuma imagem dorsal será enviada
+  ao modelo lateral;
+- não fundir drone e lateral até existirem capturas sincronizadas do mesmo
+  animal e evidência de ganho na validação protegida.
+
 ### M4 — Produto
 
 - adaptador HTTP de inferência criado e bloqueado até a promoção do modelo;
@@ -132,6 +165,8 @@ R² será relatado, mas nunca utilizado sozinho como critério de sucesso.
   por quadro, resultado agregado e motivo de eventual rejeição;
 - remoção do vídeo temporário ao final da requisição, salvo consentimento e
   política explícitos para formar uma coleta autorizada;
+- futuro contrato UAV separado, capaz de devolver tamanho da amostra, cobertura
+  do lote, distribuição estimada, incerteza agregada e rejeições por animal;
 - interface de captura guiada na aplicação consumidora;
 - estimativa de incerteza e regra de rejeição;
 - monitoramento de deriva e rotina de recalibração;
@@ -151,6 +186,11 @@ R² será relatado, mas nunca utilizado sozinho como critério de sucesso.
 | Vídeo com quadros de animais diferentes | Peso agregado sem significado | Rastreamento do indivíduo e rejeição de troca/oclusão |
 | Seleção de quadro ajustada pelo peso real | Vazamento e resultado otimista | Ranqueamento baseado apenas em imagem e protocolo congelado |
 | Divergência entre quadros | Estimativa instável | Limiar calibrado e rejeição do vídeo |
+| Movimento durante o voo | Reconstrução 3D deformada | Sequências curtas, gate geométrico e rejeição antes do modelo |
+| Sobreposição vista de cima | Segmentos ou pesos misturados | Segmentação de instância, rastreamento e descarte de oclusões |
+| Troca de identidade no drone | Evolução individual incorreta | Identificação verificável ou resultado somente agregado |
+| Altitude/câmera não calibradas | Escala física incorreta | Metadados de voo, calibração e referência no solo |
+| Amostra aérea não representa o lote | Média de peso enviesada | Cobertura registrada e protocolo de amostragem do lote |
 | Distribuição de peso desigual | Viés nas faixas raras | Amostragem/ponderação apenas no treino |
 | Uso fora do domínio | Predição perigosa | Incerteza, detecção de qualidade e rejeição |
 
@@ -160,6 +200,8 @@ R² será relatado, mas nunca utilizado sozinho como critério de sucesso.
 - balança aferida e dados de peso sincronizados;
 - celular capaz de gravar vídeo lateral; marcador ou medição de distância
   recomendados;
+- para a trilha UAV: drone e câmera calibrados, metadados completos de voo,
+  referência de escala e capacidade de reconstrução/segmentação;
 - autorização da propriedade e política para imagens/metadados;
 - armazenamento versionado fora do Git para imagens;
 - Google Colab com GPU ou máquina CUDA;
@@ -181,5 +223,8 @@ notebooks.
 - Qual celular/câmera será o dispositivo inicial e como obteremos distância ou
   referência de escala no pasto?
 - Quantos animais formarão uma amostra representativa de cada lote por evento?
+- O drone deverá produzir peso individual identificado ou somente média e
+  distribuição do lote na primeira versão?
+- Qual drone, câmera, altitude e área de voo estarão disponíveis para o piloto?
 - Quantas fazendas e quantas datas de coleta são possíveis?
 - Qual erro em kg/% ainda produz uma decisão útil?
