@@ -159,12 +159,17 @@ confiabilidade.
 ### M4 — Produto
 
 - adaptador HTTP de inferência criado e bloqueado até a promoção do modelo;
-- endpoint de vídeo separado do endpoint de imagem, preservando o núcleo de
+- [x] endpoint de vídeo separado do endpoint de imagem, preservando o núcleo de
   inferência por quadro;
-- retorno auditável com instantes selecionados, notas de qualidade, estimativas
-  por quadro, resultado agregado e motivo de eventual rejeição;
-- remoção do vídeo temporário ao final da requisição, salvo consentimento e
+- [x] retorno auditável com instantes selecionados, notas de qualidade,
+  estimativas por quadro, resultado agregado e motivo de eventual rejeição;
+- [x] remoção do vídeo temporário ao final da requisição, salvo consentimento e
   política explícitos para formar uma coleta autorizada;
+- [x] inicialização protegida de lotes de campo e seleção offline de um quadro
+  técnico por evento/vista, sem substituir o peso medido e com nova revisão
+  humana obrigatória;
+- [ ] calibrar intervalo agregado e limiar de divergência com vídeos e pesos
+  reais, sem reutilizar indevidamente o intervalo de uma imagem;
 - futuro contrato UAV separado, capaz de devolver tamanho da amostra, cobertura
   do lote, distribuição estimada, incerteza agregada e rejeições por animal;
 - interface de captura guiada na aplicação consumidora;

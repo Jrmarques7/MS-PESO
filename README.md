@@ -89,6 +89,13 @@ Os critérios completos estão em
 - [x] Inferência do candidato interno criada com qualidade e intervalo conformal.
 - [x] Microsserviço HTTP stateless criado com autenticação, limites de upload,
   saúde/prontidão e bloqueio padrão do candidato não aprovado.
+- [x] Vídeo V1 implementado com amostragem uniforme, gate técnico, diversidade
+  temporal, mediana de até cinco quadros e auditoria por instante.
+- [x] Fluxo de coleta em pasto implementado com lote protegido contra
+  sobrescrita e seleção de um quadro técnico por evento/vista, preservando o
+  peso real de balança e exigindo revisão humana.
+- [ ] Calibrar com vídeos e pesos reais o consenso e o intervalo agregado;
+  detector de bovino, identidade, pose lateral e oclusão também permanece pendente.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -257,6 +264,13 @@ de produção é liberado enquanto o pacote continuar não aprovado. O adaptador
 HTTP para teste de contrato e futura integração está documentado em
 [API de inferência](docs/API.md) e permanece bloqueado por padrão.
 
+O mesmo serviço possui um endpoint separado para vídeo lateral curto. Ele
+amostra até 20 instantes, conserva de três a cinco quadros tecnicamente válidos
+e temporalmente diversos e retorna a mediana das estimativas. O contrato deixa
+o intervalo agregado e o limiar de divergência como pendentes de calibração e
+não afirma detectar animal, identidade, pose ou oclusão. Consulte a
+[API de inferência](docs/API.md) para o contrato e as limitações.
+
 A arquitetura ConvNeXt-Tiny também foi avaliada, mas não substituiu o B2:
 
 ```bash
@@ -349,6 +363,7 @@ python -m ms_peso.train --config configs/efficientnet_b0_balanced.yaml
 
 - [Plano do produto e pesquisa](docs/PROJECT_PLAN.md)
 - [Protocolo de coleta](docs/DATA_COLLECTION_PROTOCOL.md)
+- [Plano de captura lateral no pasto](docs/PASTURE_CAPTURE_PLAN.md)
 - [Plano de experimentos](docs/EXPERIMENTS.md)
 - [Registro de decisões](docs/DECISIONS.md)
 - [Execução no Google Colab](docs/COLAB.md)

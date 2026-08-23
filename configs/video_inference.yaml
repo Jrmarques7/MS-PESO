@@ -1,0 +1,25 @@
+schema_version: 1
+policy_id: pasture-video-v1
+policy_version: "1.0.0"
+status: design_unvalidated
+
+extraction:
+  max_duration_seconds: 10
+  sample_count: 20
+  max_frame_pixels: 8294400
+
+selection:
+  min_valid_frames: 3
+  top_k: 5
+  min_temporal_gap_seconds: 0.35
+
+consensus:
+  # Deve permanecer nulo até ser calibrado com vídeos e pesos reais vinculados.
+  max_frame_spread_kg: null
+
+limitations:
+  - A seleção avalia apenas resolução, formato, exposição e nitidez.
+  - Ainda não detecta bovino, identidade, vista lateral, corpo inteiro, pose ou oclusão.
+  - O intervalo conformal do modelo de imagem não foi calibrado para a mediana de vídeo.
+  - O limiar aceitável de divergência entre quadros depende de calibração em vídeos reais.
+  - O candidato atual permanece bloqueado para produção e uso comercial.

@@ -20,12 +20,14 @@ dependencies = [
 [project.optional-dependencies]
 service = [
   "fastapi>=0.115,<1",
+  "opencv-python-headless>=4.10,<5",
   "python-multipart>=0.0.18,<1",
   "uvicorn>=0.30,<1",
 ]
 dev = [
   "fastapi>=0.115,<1",
   "httpx2>=2,<3",
+  "opencv-python-headless>=4.10,<5",
   "python-multipart>=0.0.18,<1",
   "pytest>=7.4,<9",
   "ruff>=0.6,<1",
@@ -34,6 +36,10 @@ dev = [
 
 [project.scripts]
 ms-peso-service = "ms_peso.service.run:main"
+ms-peso-predict-video = "ms_peso.predict_video:main"
+ms-peso-validate-uav-capture = "ms_peso.validate_uav_capture:main"
+ms-peso-init-collection-batch = "ms_peso.init_collection_batch:main"
+ms-peso-select-collection-frames = "ms_peso.select_collection_frames:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

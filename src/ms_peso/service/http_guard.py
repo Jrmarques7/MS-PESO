@@ -29,12 +29,12 @@ class RequestGuardMiddleware:
         *,
         api_key: str,
         authentication_configured: bool,
-        max_prediction_body_bytes: int,
+        body_limits_by_path: dict[str, int],
     ) -> None:
         self.app = app
         self.api_key = api_key
         self.authentication_configured = authentication_configured
-        self.max_prediction_body_bytes = max_prediction_body_bytes
+        self.body_limits_by_path = dict(body_limits_by_path)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
@@ -62,8 +62,8 @@ class RequestGuardMiddleware:
                 await response(scope, receive, send)
                 return
 
-        is_prediction = path == "/v1/predictions" and scope.get("method") == "POST"
-        if not is_prediction:
+        body_limit = self.body_limits_by_path.get(path)
+        if body_limit is None or scope.get("method") != "POST":
             await self.app(scope, receive, send)
             return
 
@@ -79,7 +79,15 @@ class RequestGuardMiddleware:
                 )
                 await response(scope, receive, send)
                 return
-            if declared_size > self.max_prediction_body_bytes:
+            if declared_size < 0:
+                response = _problem(
+                    "invalid_content_length",
+                    "O tamanho declarado da requisição é inválido.",
+                    400,
+                )
+                await response(scope, receive, send)
+                return
+            if declared_size > body_limit:
                 response = _problem(
                     "request_too_large",
                     "A requisição excede o limite permitido.",
@@ -96,7 +104,7 @@ class RequestGuardMiddleware:
             message = await receive()
             if message["type"] == "http.request":
                 received += len(message.get("body", b""))
-                if received > self.max_prediction_body_bytes:
+                if received > body_limit:
                     raise RequestBodyTooLarge
             return message
 

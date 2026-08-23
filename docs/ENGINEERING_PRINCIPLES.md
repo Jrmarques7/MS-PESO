@@ -47,6 +47,12 @@ linhas do componente.
 | `service/http_guard.py` | recusar chave inválida e corpo excessivo antes do parser |
 | `service/uploads.py` | validar, limitar e remover uploads temporários |
 | `service/payloads.py` | montar o contrato HTTP de resposta |
+| `service/video_policy.py` | validar a política versionada de vídeo |
+| `service/video_frames.py` | ler metadados e extrair quadros temporários |
+| `service/video_selection.py` | ranquear e selecionar quadros técnicos diversos |
+| `service/video_aggregation.py` | consolidar estimativas e aplicar consenso |
+| `service/video_inference.py` | orquestrar o caso de uso de inferência por vídeo |
+| `service/video_payloads.py` | montar o contrato HTTP específico de vídeo |
 | `service/app.py` | autenticar e expor somente as rotas HTTP |
 | `importers/` | converter uma fonte externa para o contrato MS-PESO |
 | futuros módulos de inferência | carregar o artefato e produzir estimativas |

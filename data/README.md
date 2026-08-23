@@ -39,12 +39,26 @@ data/processed/    manifesto pronto para experimento
 Nunca edite `raw` para corrigir um exemplo. Registre a exclusão ou correção em
 um novo manifesto processado.
 
+Os datasets Mendeley auditados usam um estágio intermediário adicional. Os ZIPs
+originais e suas extrações permanecem em `data/raw/mendeley/`; os importadores
+gravam apenas manifestos em `data/interim/`. O Horqin exige aceite explícito das
+anomalias conhecidas, e o multivista gera somente um manifesto de revisão em
+quarentena. Consulte `docs/DATASETS.md` e `data/source_registry.yaml` antes de
+promover qualquer fonte externa.
+
 ## Coleta piloto própria
 
-Os modelos em `data/templates/` iniciam o manifesto da coleta e o registro de
-autorizações. Copie-os para `data/interim/`, remova as linhas de exemplo e não
-versione documentos assinados ou dados pessoais. A política completa e o
-comando de auditoria estão em `docs/PILOT_COLLECTION_KIT.md`.
+Os modelos em `data/templates/` definem o manifesto da coleta e o registro de
+autorizações. Use `ms_peso.init_collection_batch` para criar cópias vazias em
+`data/interim/pasture/<batch_id>/`; ele não copia as linhas de exemplo e não
+sobrescreve um lote existente. Documentos assinados e dados pessoais não são
+versionados.
+
+Para vídeos laterais, `ms_peso.select_collection_frames` escolhe somente um
+quadro técnico por evento/vista e o grava junto de um manifesto rastreável. O
+processo não estima peso: `weight_kg` é copiado do registro da balança. Cada
+quadro selecionado retorna a `quality=review` e precisa de inspeção humana. A
+política completa e os comandos estão em `docs/PILOT_COLLECTION_KIT.md`.
 
 Após aprovação, `ms_peso.seal_collection` cria em `data/processed/` um
 manifesto canônico com `image_sha256` e `image_dhash`. O arquivo selado não deve

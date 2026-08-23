@@ -3,6 +3,8 @@ from __future__ import annotations
 from io import BytesIO
 from pathlib import Path
 
+import cv2
+import numpy as np
 from fastapi.testclient import TestClient
 from PIL import Image
 
@@ -94,6 +96,7 @@ class FakeBackend:
         self.descriptor = _descriptor(tmp_path)
         self.accepted = accepted
         self.path_seen: Path | None = None
+        self.assessed_paths: list[Path] = []
 
     @property
     def status(self) -> BackendStatus:
@@ -101,6 +104,11 @@ class FakeBackend:
 
     def initialize(self) -> None:
         pass
+
+    def assess(self, image_path: Path) -> ImageQualityReport:
+        assert image_path.is_file()
+        self.assessed_paths.append(image_path)
+        return _quality(accepted=self.accepted)
 
     def predict(self, image_path: Path) -> BackendPrediction:
         assert image_path.is_file()
@@ -123,6 +131,19 @@ class FakeBackend:
             descriptor=self.descriptor,
             device="cpu" if prediction else None,
         )
+
+
+def _video_bytes(tmp_path: Path) -> bytes:
+    video_path = tmp_path / "cow.avi"
+    writer = cv2.VideoWriter(
+        str(video_path), cv2.VideoWriter_fourcc(*"MJPG"), 10.0, (96, 64)
+    )
+    assert writer.isOpened()
+    for index in range(30):
+        frame = np.full((64, 96, 3), 40 + index, dtype=np.uint8)
+        writer.write(frame)
+    writer.release()
+    return video_path.read_bytes()
 
 
 def test_liveness_does_not_depend_on_model_or_authentication(tmp_path: Path) -> None:
@@ -259,3 +280,56 @@ def test_default_backend_blocks_unapproved_descriptor(tmp_path: Path) -> None:
         response = client.get("/health/ready")
     assert response.status_code == 503
     assert response.json()["code"] == "model_not_promoted"
+
+
+def test_video_prediction_aggregates_frames_and_removes_temporary_files(
+    tmp_path: Path,
+) -> None:
+    backend = FakeBackend(tmp_path)
+    app = create_app(settings=_settings(tmp_path), backend=backend)
+    with TestClient(app) as client:
+        response = client.post(
+            "/v1/video-predictions",
+            headers={"X-API-Key": API_KEY},
+            files={"video": ("cow.avi", _video_bytes(tmp_path), "video/x-msvideo")},
+            data={"correlation_id": "farmup-video-7"},
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["correlation_id"] == "farmup-video-7"
+    assert payload["estimated_weight_kg"] == 410.0
+    assert payload["prediction_interval"] is None
+    assert payload["interval_status"] == "pending_video_calibration"
+    assert payload["aggregation"]["method"] == "median_selected_frames"
+    assert payload["aggregation"]["selected_frame_count"] == 5
+    assert payload["aggregation"]["consensus_status"] == (
+        "threshold_not_calibrated"
+    )
+    assert payload["model"]["commercial_use_allowed"] is False
+    assert all(not path.exists() for path in backend.assessed_paths)
+    assert backend.path_seen is not None
+    assert not backend.path_seen.exists()
+
+
+def test_video_prediction_rejects_unsupported_or_large_upload(
+    tmp_path: Path,
+) -> None:
+    backend = FakeBackend(tmp_path)
+    settings = _settings(tmp_path, max_video_upload_bytes=10)
+    with TestClient(create_app(settings=settings, backend=backend)) as client:
+        unsupported = client.post(
+            "/v1/video-predictions",
+            headers={"X-API-Key": API_KEY},
+            files={"video": ("cow.mkv", b"video", "video/x-matroska")},
+        )
+        too_large = client.post(
+            "/v1/video-predictions",
+            headers={"X-API-Key": API_KEY},
+            files={"video": ("cow.mp4", b"0" * 11, "video/mp4")},
+        )
+
+    assert unsupported.status_code == 415
+    assert unsupported.json()["error"]["code"] == "unsupported_media_type"
+    assert too_large.status_code == 413
+    assert too_large.json()["error"]["code"] == "video_too_large"

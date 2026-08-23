@@ -12,9 +12,14 @@ de uma vista nesse evento.
 - `configs/pilot_collection.yaml`: regras versionadas da coleta;
 - `configs/image_quality.yaml`: limites técnicos da fotografia;
 - `data/templates/pilot_manifest.csv`: modelo de manifesto por imagem;
+- `data/templates/pasture_video_manifest.csv`: inventário bruto de vídeos no pasto;
 - `data/templates/authorization_registry.csv`: índice das autorizações;
+- `python -m ms_peso.init_collection_batch`: cria um lote vazio sem sobrescrever;
+- `python -m ms_peso.select_collection_frames`: escolhe um quadro técnico por
+  evento/vista sem executar o modelo de peso;
 - `python -m ms_peso.validate_collection`: auditor automático;
 - `docs/DATA_COLLECTION_PROTOCOL.md`: protocolo zootécnico e fotográfico.
+- `docs/PASTURE_CAPTURE_PLAN.md`: execução progressiva no cenário real de pasto.
 
 As linhas dos templates são exemplos e devem ser removidas. Documentos assinados
 e informações pessoais não entram no Git. Guarde-os em repositório seguro e use
@@ -29,19 +34,32 @@ somente `document_reference` para apontar ao registro correspondente.
 4. Aferir a balança e registrar `scale_id`.
 5. Preparar marcador de dimensão conhecida no plano do animal.
 6. Sincronizar relógios da câmera e do registro de pesagem.
-7. Copiar os templates para `data/interim/`, que é ignorado pelo Git.
+7. Criar o lote vazio com o comando abaixo; `data/raw` e `data/interim` são
+   ignorados pelo Git.
+
+```powershell
+python -m ms_peso.init_collection_batch `
+  --batch-id batch_20260823_001 `
+  --farm-id farm_001
+```
+
+O comando gera manifestos contendo apenas os cabeçalhos e recusa reutilizar um
+`batch_id`. As linhas de exemplo dos templates não são copiadas.
 
 ## Estrutura local recomendada
 
 ```text
-data/raw/pilot/
+data/raw/pasture/
   farm_001/
     nelore_0001/
       event_20260822_001/
-        left.jpg
-data/interim/
-  pilot_manifest.csv
-  authorization_registry.csv
+        identity.jpg
+        lateral_left_01.mp4
+data/interim/pasture/
+  batch_20260823_001/
+    batch_metadata.json
+    pasture_video_manifest.csv
+    authorization_registry.csv
 ```
 
 Os arquivos em `data/raw` são imutáveis. Ajustes, exclusões e seleção de frames
@@ -59,6 +77,32 @@ devem ser registrados em novos manifestos, sem sobrescrever a captura original.
 
 Horários usam ISO 8601 com fuso, por exemplo `2026-08-22T09:02:00-03:00`.
 Booleanos usam exclusivamente `true` ou `false`.
+
+## Selecionar o melhor quadro dos vídeos
+
+Primeiro, uma pessoa confere cada vídeo bruto e só marca `quality=accepted`,
+`primary_full_body=true` e `primary_lateral=true` quando identidade, corpo e
+pose estiverem corretos. Em seguida:
+
+```powershell
+python -m ms_peso.select_collection_frames `
+  --manifest data/interim/pasture/batch_20260823_001/pasture_video_manifest.csv `
+  --video-root data/raw/pasture `
+  --image-root data `
+  --output-directory data/interim/pasture/batch_20260823_001/selection_v001
+```
+
+O processo avalia resolução, exposição e nitidez, compara todas as tomadas do
+mesmo evento/vista e materializa somente o melhor quadro. Ele copia
+`weight_kg` do manifesto de balança sem fazer inferência e nunca altera o vídeo
+original. A saída contém `pilot_manifest.csv`, `selected_frames/` e
+`selection_report.json`.
+
+Todo quadro gerado recebe novamente `quality=review`, pois a seleção automática
+não confirma bovino, identidade, lateralidade, corpo inteiro ou oclusão. Após
+inspeção visual, copie o manifesto para `pilot_manifest_reviewed_v001.csv` e
+promova somente os quadros corretos para `accepted`. Uma nova execução usa
+`selection_v002`; saídas existentes não são sobrescritas.
 
 ## Direitos e autorização
 
@@ -80,12 +124,12 @@ artefato derivado pode ser distribuído.
 
 ```powershell
 python -m ms_peso.validate_collection `
-  --manifest data/interim/pilot_manifest.csv `
-  --authorizations data/interim/authorization_registry.csv `
-  --image-root data/raw/pilot `
+  --manifest data/interim/pasture/batch_20260823_001/selection_v001/pilot_manifest_reviewed_v001.csv `
+  --authorizations data/interim/pasture/batch_20260823_001/authorization_registry.csv `
+  --image-root data `
   --policy configs/pilot_collection.yaml `
   --quality-policy configs/image_quality.yaml `
-  --output artifacts/collection_audit/report.json
+  --output artifacts/collection_audit/batch_20260823_001_v001.json
 ```
 
 Código de saída 0 significa aprovação. Código 2 significa rejeição; o JSON lista
@@ -98,9 +142,9 @@ Quando a auditoria estiver limpa, gere um snapshot imutável:
 
 ```powershell
 python -m ms_peso.seal_collection `
-  --manifest data/interim/pilot_manifest.csv `
-  --authorizations data/interim/authorization_registry.csv `
-  --image-root data/raw/pilot `
+  --manifest data/interim/pasture/batch_20260823_001/selection_v001/pilot_manifest_reviewed_v001.csv `
+  --authorizations data/interim/pasture/batch_20260823_001/authorization_registry.csv `
+  --image-root data `
   --output-manifest data/processed/pilot_snapshot_v001.csv `
   --output-report artifacts/collection_snapshot/v001.json
 ```
@@ -124,7 +168,7 @@ selagem. Ele recalcula todos os hashes antes de separar os animais:
 python -m ms_peso.prepare_commercial_manifest `
   --input data/processed/pilot_snapshot_v001.csv `
   --snapshot-report artifacts/collection_snapshot/v001.json `
-  --image-root data/raw/pilot `
+  --image-root data `
   --output data/processed/pilot_commercial_split_v001.csv `
   --output-report artifacts/commercial_split/v001.json
 ```

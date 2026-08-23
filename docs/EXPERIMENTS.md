@@ -447,6 +447,129 @@ python -m ms_peso.audit_point_cloud_geometry \
   --reference-checkpoint artifacts/efficientnet_b0_rgb/best_model.pt
 ```
 
+## H1-Horqin-Side-Random-001 — lateral externa sem ImageNet
+
+Experimento executado em 2026-08-23 para verificar se a base Horqin é suficiente
+para treinar uma rede RGB do zero, sem reutilizar pesos ImageNet.
+
+- fonte: Horqin versão 3, licença CC BY 4.0;
+- entrada: uma imagem lateral por animal;
+- dados válidos: 71 animais após excluir a lateral ausente do animal 20;
+- divisão fixa, seed 42: 51 treino, 10 validação e 10 teste, sem vazamento por
+  animal;
+- manifesto derivado 224 × 224: SHA-256
+  `6e532851cf32a416a059b1a1b52aed82af6935bb1c7673d7d6f7076412c554f9`;
+- arquitetura: EfficientNet-B0;
+- `pretrained: false` e `initialization: random`;
+- nenhuma carga de checkpoint ou peso ImageNet;
+- 100 épocas máximas, parada antecipada com paciência 15;
+- melhor validação na época 18, com MAE de 44,18 kg;
+- encerramento na época 33.
+
+O conjunto de teste foi consultado somente depois da seleção da melhor época.
+O resultado ficou abaixo do baseline da média:
+
+| Métrica | EfficientNet aleatória | Média do treino |
+|---|---:|---:|
+| MAE | 84,54 kg | 71,40 kg |
+| RMSE | 99,79 kg | 91,11 kg |
+| MAPE | 18,85% | 15,62% |
+| Viés | +27,50 kg | +5,16 kg |
+| R² | -0,204 | -0,003 |
+| Dentro de ±20 kg | 20% | 30% |
+
+Os erros absolutos extremos ocorreram tanto em animais leves quanto pesados:
+158,43 kg no animal 40, de 342 kg; 145,82 kg no animal 37, de 612 kg; e
+139,72 kg no animal 17, de 371 kg. As previsões se concentraram entre
+aproximadamente 461 e 549 kg, sem aprender adequadamente os extremos.
+
+**Decisão:** experimento reprovado e `commercial_use_allowed: false`. O
+checkpoint não é promovido. Cinquenta e um animais de treino não sustentaram o
+ajuste de uma EfficientNet-B0 aleatória. Não selecionar uma nova arquitetura
+com base nesses dez animais de teste; o próximo avanço deve vir de mais dados
+laterais com pesagem real, pré-treinamento com proveniência comercial adequada
+ou uma nova partição previamente congelada.
+
+Artefatos locais ignorados pelo Git:
+
+- `artifacts/horqin_side_random_v001/best_model.pt`, SHA-256
+  `3662342a0d4947c168e367c09356f874a3341dab3eed8292d64b152dc45cdcaf`;
+- `metrics.json`, SHA-256
+  `ba08000f29aabb0ca46fed4e8da1929f566f5614f9297ca27e7dc8305620a58c`;
+- `predictions_test.csv`, SHA-256
+  `84b4e4b59384697c030847e5835fbceeb9b07d7a811d528818a7f44804b349b2`.
+
+Reprodução:
+
+```bash
+python -m ms_peso.prepare_rgb_cache \
+  --input data/processed/horqin_side_research_split.csv \
+  --output data/processed/horqin_side_224_split.csv \
+  --image-root data \
+  --output-dir data/interim/horqin_side_224 \
+  --image-size 224
+python -m ms_peso.train --config configs/horqin_side_random.yaml
+```
+
+## H2-SSL-CC-BY-001 — pré-treinamento bovino sem rótulos
+
+Gate executado em 2026-08-23 para testar uma inicialização visual permitida sem
+pesos ImageNet e sem confiar nos rótulos de peso do dataset multivista.
+
+O manifesto autossupervisionado contém somente caminhos e proveniência, sem a
+coluna `weight_kg`. Foram usadas 409 imagens CC BY 4.0 únicas:
+
+- 358 imagens do multivista após remover duas duplicatas exatas;
+- 51 laterais Horqin pertencentes ao split de treino;
+- zero imagens Horqin de validação ou teste;
+- manifesto SHA-256
+  `6ac18d7bd2e9c4c5d1b9362cb8d8534c1cf4a1d7c2346b4fb03c857de281d137`.
+
+Uma EfficientNet-B0 aleatória foi treinada por 20 épocas com duas variações da
+mesma imagem e perda NT-Xent. A perda contrastiva caiu de 3,6115 para 1,0839. O
+encoder final, com `labels_used: false`, tem SHA-256
+`7955fb1cc8c3489f20861f6eed8ffaae0704a068dab1085d9b0ec6625b0a74be`.
+
+Em seguida, o encoder foi ajustado com os 51 animais Horqin de treino. O gate
+consultou apenas os 10 animais de validação; o teste não foi aberto. A melhor
+época foi 21 e a parada antecipada ocorreu na época 36:
+
+| Métrica de validação | H2 SSL | H1 aleatório | Média do treino |
+|---|---:|---:|---:|
+| MAE | 53,81 kg | 44,18 kg | 80,99 kg |
+| RMSE | 62,07 kg | 57,06 kg | 89,49 kg |
+| MAPE | 11,85% | 9,94% | 17,06% |
+| R² | 0,518 | 0,593 | -0,001 |
+
+**Decisão:** o pré-treinamento aprendeu invariâncias visuais e superou a média,
+mas não melhorou a inicialização aleatória na mesma validação. Gate reprovado;
+não executar no teste, não promover o checkpoint e não ajustar hiperparâmetros
+repetidamente nesses dez animais. Mais diversidade visual licenciada e,
+principalmente, mais animais com pesagem são necessários.
+
+Artefatos locais ignorados pelo Git:
+
+- encoder SSL: `artifacts/ssl_cc_by_efficientnet_b0_v001/encoder_final.pt`;
+- modelo do gate: `artifacts/horqin_side_ssl_validation_v001/`
+  `best_validation_model.pt`, SHA-256
+  `4e34fd020910eb42979f5cd0520107d89253d22be8b81af79f390c735b38d15a`;
+- relatório de validação, SHA-256
+  `9eac1d8926b1f91913e66c4fcde365d9e8055c1269589f336357bd891ca847e3`.
+
+Reprodução:
+
+```bash
+python -m ms_peso.prepare_ssl_manifest \
+  --input data/interim/multiview_all_224_manifest.csv \
+  --input data/processed/horqin_side_224_split.csv \
+  --image-root data \
+  --output data/processed/ssl_cc_by_train_only.csv
+python -m ms_peso.pretrain_contrastive \
+  --config configs/ssl_cc_by_efficientnet_b0.yaml
+python -m ms_peso.finetune_ssl_validation \
+  --config configs/horqin_side_ssl_validation.yaml
+```
+
 ## Ablações previstas
 
 | ID | Mudança em relação a B1 |

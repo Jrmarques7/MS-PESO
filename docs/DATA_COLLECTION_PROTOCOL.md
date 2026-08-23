@@ -99,3 +99,15 @@ Para a coleta piloto destinada à trilha comercial, também são obrigatórios
 `commercial_training_allowed` e a vinculação ao registro de autorizações. Os
 templates, regras e auditor automático estão em `PILOT_COLLECTION_KIT.md`.
 
+## 9. Captura lateral no pasto
+
+O cenário operacional com celular e vídeo possui um plano próprio em
+`PASTURE_CAPTURE_PLAN.md`. Ele mantém peso e identidade vinculados, mas registra
+explicitamente outros animais, cercas, iluminação, duração e pose. Use
+`data/templates/pasture_video_manifest.csv` para o inventário bruto e converta
+somente os quadros selecionados para o manifesto comercial de imagens. Os
+comandos `ms_peso.init_collection_batch` e
+`ms_peso.select_collection_frames` criam o lote protegido e fazem a seleção
+técnica sem executar o estimador de peso; a imagem resultante continua
+dependendo de revisão humana.
+

@@ -42,6 +42,26 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(args)
 
 
+def resolve_model_initialization(model_config: dict[str, object]) -> str:
+    """Confirma que a descrição de inicialização corresponde aos pesos usados."""
+    pretrained = bool(model_config["pretrained"])
+    declared = model_config.get("initialization")
+    initialization = str(
+        declared if declared is not None else (
+            "torchvision_default" if pretrained else "random"
+        )
+    )
+    if pretrained and initialization == "random":
+        raise ValueError(
+            "model.pretrained=true é incompatível com initialization=random."
+        )
+    if not pretrained and initialization != "random":
+        raise ValueError(
+            "model.pretrained=false exige model.initialization=random."
+        )
+    return initialization
+
+
 def main() -> None:
     args = parse_args()
     config = load_yaml_config(args.config)
@@ -228,9 +248,11 @@ def main() -> None:
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model_config = config["model"]
+    pretrained = bool(model_config["pretrained"])
+    initialization = resolve_model_initialization(model_config)
     model = build_model(
         model_config["architecture"],
-        pretrained=bool(model_config["pretrained"]),
+        pretrained=pretrained,
         dropout=float(model_config["dropout"]),
     ).to(device)
     training_config = config["training"]
@@ -267,7 +289,8 @@ def main() -> None:
             "device": str(device),
             "seed": seed,
             "architecture": model_config["architecture"],
-            "initialization": "random",
+            "pretrained": pretrained,
+            "initialization": initialization,
             "commercial_use_allowed": False,
             "promotion_status": "not_promoted",
             "best_epoch": fit_result.best_epoch,
@@ -299,7 +322,8 @@ def main() -> None:
                 "config": config,
                 "epoch": fit_result.best_epoch,
                 "workflow": workflow,
-                "initialization": "random",
+                "pretrained": pretrained,
+                "initialization": initialization,
                 "commercial_use_allowed": False,
                 "promotion_status": "not_promoted",
                 "held_out_partitions": ["calibration", "test"],
@@ -326,9 +350,14 @@ def main() -> None:
         test_result.targets, [target_mean] * len(test_result.targets)
     )
     report = {
+        "workflow": workflow,
         "device": str(device),
         "seed": seed,
         "architecture": model_config["architecture"],
+        "pretrained": pretrained,
+        "initialization": initialization,
+        "commercial_use_allowed": False,
+        "promotion_status": "not_promoted",
         "best_epoch": fit_result.best_epoch,
         "number_of_animals": {
             split: len({row["animal_id"] for row in split_rows[split]})
@@ -350,6 +379,11 @@ def main() -> None:
             "target_std": target_std,
             "config": config,
             "epoch": fit_result.best_epoch,
+            "workflow": workflow,
+            "pretrained": pretrained,
+            "initialization": initialization,
+            "commercial_use_allowed": False,
+            "promotion_status": "not_promoted",
         },
     )
     save_json(output_dir / "metrics.json", report)

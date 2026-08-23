@@ -7,6 +7,27 @@ from ms_peso.service.backend import BackendPrediction
 from ms_peso.service.uploads import StoredUpload
 
 
+def build_model_payload(result: BackendPrediction) -> dict[str, object]:
+    descriptor = result.descriptor
+    return {
+        "id": descriptor.model_id,
+        "version": descriptor.model_version,
+        "architecture": descriptor.architecture,
+        "checkpoint_sha256": descriptor.checkpoint_sha256,
+        "calibration_sha256": descriptor.calibration_sha256,
+        "evaluation_sha256": descriptor.evaluation_sha256,
+        "quality_policy_sha256": descriptor.quality_policy_sha256,
+        "model_card_sha256": descriptor.model_card_sha256,
+        "status": descriptor.status,
+        "production_ready": descriptor.production_ready,
+        "commercial_use_allowed": descriptor.commercial_use_allowed,
+        "commercial_blockers": list(descriptor.commercial_blockers),
+        "training_dataset": descriptor.dataset,
+        "training_breed": descriptor.breed,
+        "device": result.device,
+    }
+
+
 def build_prediction_payload(
     result: BackendPrediction,
     upload: StoredUpload,
@@ -47,22 +68,6 @@ def build_prediction_payload(
             "original_height": result.quality.height,
             "expected_view": descriptor.input_view,
         },
-        "model": {
-            "id": descriptor.model_id,
-            "version": descriptor.model_version,
-            "architecture": descriptor.architecture,
-            "checkpoint_sha256": descriptor.checkpoint_sha256,
-            "calibration_sha256": descriptor.calibration_sha256,
-            "evaluation_sha256": descriptor.evaluation_sha256,
-            "quality_policy_sha256": descriptor.quality_policy_sha256,
-            "model_card_sha256": descriptor.model_card_sha256,
-            "status": descriptor.status,
-            "production_ready": descriptor.production_ready,
-            "commercial_use_allowed": descriptor.commercial_use_allowed,
-            "commercial_blockers": list(descriptor.commercial_blockers),
-            "training_dataset": descriptor.dataset,
-            "training_breed": descriptor.breed,
-            "device": result.device,
-        },
+        "model": build_model_payload(result),
         "warnings": list(descriptor.limitations),
     }

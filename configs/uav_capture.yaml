@@ -1,0 +1,53 @@
+schema_version: 1
+policy_id: nelore-uav-capture-v1
+policy_version: "1.0.0"
+
+required_flight_columns:
+  - flight_id
+  - event_id
+  - farm_id
+  - lot_id
+  - captured_at
+  - drone_id
+  - camera_id
+  - altitude_agl_m
+  - ground_sample_distance_cm_px
+  - view
+  - scale_reference
+  - weather
+  - authorization_id
+  - commercial_training_allowed
+  - source_path
+
+required_observation_columns:
+  - observation_id
+  - flight_id
+  - source_frame_id
+  - segment_path
+  - animal_id
+  - identity_status
+  - weight_kg
+  - weighed_at
+  - weighing_event_id
+  - posture_status
+  - occlusion_status
+  - split
+
+allowed_views: [top]
+allowed_identity_statuses: [confirmed, unknown]
+allowed_posture_statuses: [standing, rejected]
+allowed_occlusion_statuses: [clear, rejected]
+allowed_splits: [train, val, calibration, test]
+
+altitude_agl_m: {min: 5.0, max: 30.0}
+ground_sample_distance_cm_px: {min: 0.05, max: 2.0}
+weight_kg: {min: 100.0, max: 1000.0}
+
+require_scale_reference: true
+require_commercial_training_rights: true
+
+limitations:
+  - A aprovação do contrato não demonstra suficiência estatística da amostra.
+  - Observações sem identidade confirmada não supervisionam peso individual.
+  - O modelo dorsal, sua calibração e sua avaliação ainda não existem.
+  - Dados e modelos UAV permanecem separados da modalidade RGB lateral.

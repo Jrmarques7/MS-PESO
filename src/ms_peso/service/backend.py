@@ -48,6 +48,8 @@ class PredictionBackend(Protocol):
 
     def initialize(self) -> None: ...
 
+    def assess(self, image_path: Path) -> ImageQualityReport: ...
+
     def predict(self, image_path: Path) -> BackendPrediction: ...
 
 
@@ -153,17 +155,20 @@ class CandidatePackageBackend:
             model=model_summary,
         )
 
+    def assess(self, image_path: Path) -> ImageQualityReport:
+        if not self.status.ready:
+            raise RuntimeError("Backend de inferência indisponível.")
+        if self._quality_policy is None:
+            raise RuntimeError("Backend inconsistente após inicialização.")
+        return assess_image_quality(image_path, self._quality_policy)
+
     def predict(self, image_path: Path) -> BackendPrediction:
         if not self.status.ready:
             raise RuntimeError("Backend de inferência indisponível.")
-        if (
-            self._descriptor is None
-            or self._quality_policy is None
-            or self._predictor is None
-        ):
+        if self._descriptor is None or self._predictor is None:
             raise RuntimeError("Backend inconsistente após inicialização.")
 
-        quality = assess_image_quality(image_path, self._quality_policy)
+        quality = self.assess(image_path)
         if not quality.accepted:
             return BackendPrediction(
                 prediction=None,

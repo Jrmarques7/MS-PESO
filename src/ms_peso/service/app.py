@@ -12,7 +12,19 @@ from ms_peso.service.backend import CandidatePackageBackend, PredictionBackend
 from ms_peso.service.config import ServiceSettings
 from ms_peso.service.http_guard import RequestGuardMiddleware
 from ms_peso.service.payloads import build_prediction_payload
-from ms_peso.service.uploads import UploadValidationError, store_image_upload
+from ms_peso.service.uploads import (
+    UploadValidationError,
+    store_image_upload,
+    store_video_upload,
+)
+from ms_peso.service.video_frames import VideoValidationError
+from ms_peso.service.video_inference import (
+    VideoInferenceError,
+    VideoPredictionService,
+    VideoPredictionUseCase,
+)
+from ms_peso.service.video_payloads import build_video_prediction_payload
+from ms_peso.service.video_policy import load_video_inference_policy
 
 logger = logging.getLogger(__name__)
 
@@ -38,9 +50,14 @@ def create_app(
     *,
     settings: ServiceSettings | None = None,
     backend: PredictionBackend | None = None,
+    video_predictor: VideoPredictionUseCase | None = None,
 ) -> FastAPI:
     service_settings = settings or ServiceSettings.from_env()
     prediction_backend = backend or CandidatePackageBackend(service_settings)
+    video_prediction_use_case = video_predictor or VideoPredictionService(
+        prediction_backend,
+        load_video_inference_policy(service_settings.video_policy_path),
+    )
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
@@ -51,7 +68,7 @@ def create_app(
         title="MS-PESO Inference API",
         version="1.0.0",
         description=(
-            "Serviço stateless de estimativa de peso bovino por imagem. "
+            "Serviço stateless de estimativa de peso bovino por imagem ou vídeo. "
             "O candidato atual permanece bloqueado para uso comercial."
         ),
         lifespan=lifespan,
@@ -60,9 +77,14 @@ def create_app(
         RequestGuardMiddleware,
         api_key=service_settings.api_key,
         authentication_configured=service_settings.authentication_configured,
-        # Multipart adds boundaries and headers around the image itself. The
-        # image still has its exact, lower limit enforced while it is copied.
-        max_prediction_body_bytes=(service_settings.max_upload_bytes + 1024 * 1024),
+        # Multipart adds boundaries and headers around the file itself. Each
+        # upload still has its exact, lower limit enforced while it is copied.
+        body_limits_by_path={
+            "/v1/predictions": service_settings.max_upload_bytes + 1024 * 1024,
+            "/v1/video-predictions": (
+                service_settings.max_video_upload_bytes + 1024 * 1024
+            ),
+        },
     )
 
     def require_api_key(
@@ -162,6 +184,48 @@ def create_app(
             return _problem(
                 "inference_failed",
                 "A inferência não pôde ser concluída.",
+                500,
+            )
+        finally:
+            upload.remove()
+
+    @app.post(
+        "/v1/video-predictions",
+        tags=["inference"],
+        dependencies=[Depends(require_api_key)],
+    )
+    async def predict_video(
+        video: Annotated[
+            UploadFile,
+            File(description="Vídeo curto com vista lateral do bovino"),
+        ],
+        correlation_id: Annotated[str | None, Form(max_length=128)] = None,
+    ) -> JSONResponse:
+        backend_status = prediction_backend.status
+        if not backend_status.ready:
+            return _problem(backend_status.code, backend_status.detail, 503)
+
+        try:
+            upload = await store_video_upload(
+                video, max_bytes=service_settings.max_video_upload_bytes
+            )
+        except UploadValidationError as exc:
+            return _problem(exc.code, exc.detail, exc.status_code)
+
+        try:
+            result = video_prediction_use_case.predict(upload.path)
+            payload = build_video_prediction_payload(
+                result, upload, correlation_id=correlation_id
+            )
+            status_code = 200 if result.prediction_status == "completed" else 422
+            return JSONResponse(status_code=status_code, content=payload)
+        except (VideoValidationError, VideoInferenceError) as exc:
+            return _problem(exc.code, exc.detail, 422)
+        except RuntimeError:
+            logger.exception("MS-PESO video inference failed")
+            return _problem(
+                "video_inference_failed",
+                "A inferência do vídeo não pôde ser concluída.",
                 500,
             )
         finally:

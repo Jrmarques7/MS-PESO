@@ -1,5 +1,110 @@
 # Datasets
 
+## Bases Mendeley auditadas em 2026-08-23
+
+Duas bases com licença `CC BY 4.0` foram baixadas diretamente da fonte,
+verificadas por SHA-256 e inspecionadas imagem a imagem. A licença permite uso
+comercial com atribuição, mas isso não torna automaticamente um modelo apto ao
+uso comercial: representatividade, qualidade dos rótulos e validação no domínio
+FarmUp continuam obrigatórias.
+
+Os ZIPs ficam em `data/raw/mendeley/archives/` e não são versionados. A extração
+é reproduzível, confirma tamanho e hash e rejeita caminhos inseguros:
+
+```bash
+python -m ms_peso.extract_mendeley_cattle --dataset multiview
+python -m ms_peso.extract_mendeley_cattle --dataset horqin
+```
+
+### Horqin lateral e traseiro
+
+Fonte oficial: <https://data.mendeley.com/datasets/h2s22wr5py/3>
+
+É a fonte externa mais próxima da captura lateral pretendida no pasto. A versão
+3 contém medidas e pesos de 72 bovinos Horqin entre 341 e 644 kg. A auditoria do
+arquivo encontrou 71 imagens laterais e 72 traseiras, todas decodificáveis.
+
+Três problemas foram registrados sem alterar os dados brutos:
+
+- a lateral do animal 20 está ausente;
+- a traseira 50 tem somente 750 × 1000 pixels, contra 3024 × 4032 nas demais;
+- as traseiras 57 e 67 são exatamente o mesmo arquivo.
+
+Para o primeiro experimento lateral, o importador exclui explicitamente apenas
+o animal 20 e produz 71 linhas. Ele se recusa a continuar se a opção de exclusão
+não for fornecida:
+
+```bash
+python -m ms_peso.import_horqin \
+  --dataset-root data/raw/mendeley/horqin_v3 \
+  --image-root data \
+  --output data/interim/horqin_side_manifest.csv \
+  --views side \
+  --exclude-known-anomalies
+```
+
+Ao importar lateral e traseira juntas, os animais 20, 50, 57 e 67 são excluídos
+por completo, deixando 68 animais e 136 imagens pareadas. A divisão deve ser
+feita somente depois, sempre por `animal_id`, para impedir vazamento entre
+treino, validação e teste.
+
+O manifesto lateral local foi validado com Pillow e dividido com seed 42 em 51
+animais de treino, 10 de validação e 10 de teste. Não há animal compartilhado
+entre as partições. O SHA-256 do arquivo reproduzível
+`data/processed/horqin_side_research_split.csv` é
+`c6be975eb74188d1a974791c557cede0f971a576d0da87a0ed30a9b0aba0a993`.
+
+Para evitar reabrir os PNGs de 12 MP em toda época, o redimensionamento
+determinístico para 224 × 224 foi materializado em `data/interim/`, mantendo a
+imagem original registrada em `source_image_path`. O manifesto derivado conserva
+os mesmos animais e splits e tem SHA-256
+`6e532851cf32a416a059b1a1b52aed82af6935bb1c7673d7d6f7076412c554f9`.
+
+O primeiro treinamento sem ImageNet foi executado e reprovado: a
+EfficientNet-B0 inicializada aleatoriamente obteve MAE de 84,54 kg no teste,
+pior que os 71,40 kg do baseline da média. O resultado completo está em
+[`docs/EXPERIMENTS.md`](EXPERIMENTS.md) e não autoriza promoção comercial.
+
+Também foi testado pré-treinamento contrastivo sem rótulos com 358 imagens
+multivista únicas e somente as 51 laterais Horqin de treino. O ajuste posterior
+obteve MAE de validação de 53,81 kg, pior que os 44,18 kg da inicialização
+aleatória na mesma validação. O teste não foi reaberto. Essa linha também foi
+encerrada sem promoção.
+
+Horqin é útil para pré-treinamento, ensaios de arquitetura e validação do
+pipeline. Não substitui a coleta própria: raça, fazenda, câmera, vegetação,
+distância, postura e distribuição de peso diferem do cenário brasileiro.
+
+### Multivista com cinco ângulos numéricos
+
+Fonte oficial: <https://data.mendeley.com/datasets/vf7pxfs7dx/1>
+
+A versão 1 contém 72 animais, 360 JPEGs e cinco imagens por animal. Todas abrem
+corretamente, porém a auditoria encontrou pesos declarados entre 40 e 1.300 kg,
+mediana de 145 kg, sete rótulos abaixo de 80 kg e cinco acima de 900 kg. Também
+há dois pares de imagens duplicadas do animal 57. A fonte não documenta qual
+número corresponde semanticamente a lateral esquerda, direita, frente ou
+traseira, e a amostra visual inclui baias e ambientes de mercado, não apenas
+pasto livre.
+
+Por isso, esta base permanece em quarentena. O importador exige confirmação
+explícita, omite nomes de coletores e GPS exato e grava
+`training_eligible=false`, `quality=review_required` e
+`label_status=unverified_source_label`:
+
+```bash
+python -m ms_peso.import_mendeley_multiview \
+  --dataset-root data/raw/mendeley/multiview_v1 \
+  --image-root data \
+  --output data/interim/multiview_review_manifest.csv \
+  --angles angle_1 \
+  --acknowledge-unverified-source-labels
+```
+
+Esse manifesto serve para auditoria e engenharia multivista. Ele não deve ser
+promovido a conjunto comercial aprovado sem validação independente dos pesos e
+documentação dos ângulos.
+
 ## Estratégia brasileira
 
 As fontes brasileiras e específicas de Nelore são prioritárias para o domínio

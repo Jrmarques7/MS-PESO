@@ -1,5 +1,103 @@
-revision_date: "2026-08-22"
+revision_date: "2026-08-23"
 sources:
+  - id: mendeley_horqin_side_back_v3
+    name: Cattle side view and back view dataset
+    country: China
+    breed: horqin
+    priority: P1
+    acquisition: ground_rgb_side_and_back_grassland
+    primary_use: external_research_pretraining_and_pipeline_validation
+    scale:
+      animals_with_measurements: 72
+      images_in_archive: 143
+      side_images: 71
+      back_images: 72
+      normal_resolution_images: 142
+      reduced_resolution_images: 1
+      archive_bytes: 2517767623
+      archive_uncompressed_bytes: 2521049866
+      archive_files: 144
+    body_weight_kg:
+      minimum: 341
+      median: 466.5
+      mean: 482.0
+      maximum: 644
+    weight_label_status: published_scale_measurement_with_body_measurements
+    access: public_download
+    dataset_license: CC_BY_4_0
+    commercial_use_under_license: allowed_with_attribution
+    status: audited_research_candidate_not_commercially_validated
+    archive_provenance:
+      downloaded_at: "2026-08-23"
+      version: 3
+      sha256: 47773895edc1123cb3057061521227d19450a36a396c04a12a10de24a72dfaa2
+      zip_crc_check: passed
+      image_decode_check: 143_of_143_passed
+    urls:
+      dataset: https://data.mendeley.com/datasets/h2s22wr5py/3
+      doi: https://doi.org/10.17632/h2s22wr5py.3
+    audited_anomalies:
+      - Side image for animal 20 is absent from version 3.
+      - Back image 50 is a 750x1000 JPEG; the other originals use a 3024x4032 frame.
+      - Back images 57 and 67 have identical SHA-256 content.
+    default_import_policy:
+      side_only_excluded_animals: [20]
+      side_only_retained_animals: 71
+      paired_side_back_excluded_animals: [20, 50, 57, 67]
+      paired_side_back_retained_animals: 68
+      split_group: animal_id
+    caveats:
+      - Horqin cattle and the Chinese grassland domain do not represent Brazilian Nelore herds.
+      - This source does not replace the FarmUp pasture collection with local scale weights.
+      - Preserve dataset attribution in experiments, models, and commercial documentation.
+
+  - id: mendeley_multiview_weight_v1
+    name: Multi-View Cow Image Dataset for AI-Based Weight Estimation
+    country: Bangladesh
+    breed: mixed_or_not_declared
+    priority: P2
+    acquisition: smartphone_rgb_five_numeric_angles
+    primary_use: quarantined_data_audit_and_multiview_engineering
+    scale:
+      animals: 72
+      images: 360
+      images_per_animal: 5
+      images_per_angle: 72
+      archive_bytes: 961978093
+      archive_uncompressed_bytes: 962726107
+      archive_files: 362
+    body_weight_kg:
+      minimum: 40
+      median: 145
+      mean: 272.86
+      maximum: 1300
+      labels_below_80_kg: 7
+      labels_above_900_kg: 5
+    weight_label_status: source_labels_unverified_independently
+    access: public_download
+    dataset_license: CC_BY_4_0
+    commercial_use_under_license: allowed_with_attribution
+    status: quarantined_pending_label_and_view_audit
+    archive_provenance:
+      downloaded_at: "2026-08-23"
+      version: 1
+      sha256: 962399c12fbaa655abd314fa9037ada3854b8ce6ecc0af2847e9e5c5f27696ec
+      zip_crc_check: passed
+      image_decode_check: 360_of_360_passed
+    urls:
+      dataset: https://data.mendeley.com/datasets/vf7pxfs7dx/1
+      doi: https://doi.org/10.17632/vf7pxfs7dx.1
+    audited_anomalies:
+      - Weight labels span 40 to 1300 kg and require independent plausibility review.
+      - Angle numbers have no published semantic mapping to left, right, front, or back.
+      - Animal 57 angle 2 equals angle 4 byte-for-byte.
+      - Animal 57 angle 3 equals angle 5 byte-for-byte.
+      - The visual sample includes tethered stalls and market-like scenes, not free pasture.
+      - Public metadata contains collector names and exact GPS; importers omit both.
+    caveats:
+      - Generated manifests are marked training_eligible=false and review_required.
+      - Do not promote this source into commercial training without a documented label audit.
+
   - id: nellore_beef_cattle_uav_longitudinal_public
     name: NelloreBeefCattleDataset longitudinal public archive
     country: Brazil

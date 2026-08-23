@@ -1,0 +1,26 @@
+project:
+  name: ms-peso-ssl-cc-by-efficientnet-b0-v001
+  seed: 42
+  workflow: self_supervised_pretraining
+
+data:
+  manifest: data/processed/ssl_cc_by_train_only.csv
+  image_root: data
+  image_size: 224
+  batch_size: 16
+  num_workers: 0
+
+model:
+  architecture: efficientnet_b0
+  pretrained: false
+  initialization: random
+  projection_dim: 128
+
+training:
+  epochs: 20
+  learning_rate: 0.0005
+  weight_decay: 0.0001
+  temperature: 0.20
+
+output:
+  directory: artifacts/ssl_cc_by_efficientnet_b0_v001

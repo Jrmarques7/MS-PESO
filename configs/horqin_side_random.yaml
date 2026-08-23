@@ -1,0 +1,28 @@
+project:
+  name: ms-peso-horqin-side-random-v001
+  seed: 42
+  workflow: research
+
+data:
+  manifest: data/processed/horqin_side_224_split.csv
+  image_root: data
+  view: side
+  image_size: 224
+  batch_size: 8
+  num_workers: 0
+
+model:
+  architecture: efficientnet_b0
+  pretrained: false
+  initialization: random
+  dropout: 0.30
+
+training:
+  epochs: 100
+  learning_rate: 0.001
+  weight_decay: 0.0005
+  huber_delta: 1.0
+  patience: 15
+
+output:
+  directory: artifacts/horqin_side_random_v001

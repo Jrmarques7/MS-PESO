@@ -384,3 +384,22 @@ complementar.
 
 **Motivo:** grande amplitude de peso pode gerar R² alto mesmo com erro absoluto
 operacionalmente inadequado.
+
+## 2026-08-23 — Vídeo V1 seleciona tecnicamente e agrega sem falsa calibração
+
+**Decisão:** o endpoint de vídeo amostra instantes uniformes, aplica o gate de
+qualidade já versionado, seleciona de três a cinco quadros com diversidade
+temporal e usa a mediana das previsões. O intervalo agregado fica nulo e o
+limiar de divergência fica desativado até calibração específica por evento de
+vídeo.
+
+**Motivo:** o intervalo conformal atual descreve uma imagem individual, não a
+mediana de quadros correlacionados. Inventar um intervalo ou um corte em kg
+criaria segurança estatística inexistente.
+
+**Limite explícito:** a nota técnica não detecta bovino, identidade, pose,
+vista lateral, corpo inteiro ou oclusão. Esses controles exigem dados reais e
+componentes próprios antes da validação de campo.
+
+**Consequência SRP:** extração, seleção, agregação, orquestração e serialização
+HTTP permanecem em módulos independentes e testáveis.
