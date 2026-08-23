@@ -87,6 +87,8 @@ Os critérios completos estão em
 - [x] Calibração conformal protegida criada por animal, sem acesso ao teste.
 - [x] Avaliação final com recibo único, IC95% e gate técnico implementada.
 - [x] Inferência do candidato interno criada com qualidade e intervalo conformal.
+- [x] Microsserviço HTTP stateless criado com autenticação, limites de upload,
+  saúde/prontidão e bloqueio padrão do candidato não aprovado.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -250,8 +252,10 @@ O descritor autentica checkpoint, calibração, avaliação, política de qualid
 e model card. Imagens rejeitadas não carregam o checkpoint. Imagens aceitas
 recebem peso e intervalo conformal, mas a saída declara explicitamente
 `authorization_status: blocked_pending_mandatory_reviews` e
-`commercial_use_allowed: false`. Esse é o núcleo reutilizável; nenhuma API ou
-microsserviço foi criado neste repositório.
+`commercial_use_allowed: false`. Esse é o núcleo reutilizável; nenhum serviço
+de produção é liberado enquanto o pacote continuar não aprovado. O adaptador
+HTTP para teste de contrato e futura integração está documentado em
+[API de inferência](docs/API.md) e permanece bloqueado por padrão.
 
 A arquitetura ConvNeXt-Tiny também foi avaliada, mas não substituiu o B2:
 
@@ -351,6 +355,7 @@ python -m ms_peso.train --config configs/efficientnet_b0_balanced.yaml
 - [Princípios de engenharia](docs/ENGINEERING_PRINCIPLES.md)
 - [Model card do B2](docs/MODEL_CARD_B2.md)
 - [Model card do candidato comercial](docs/MODEL_CARD_COMMERCIAL_CANDIDATE.md)
+- [API de inferência](docs/API.md)
 - [Proveniência e caminho comercial](docs/MODEL_PROVENANCE.md)
 - [Kit de coleta piloto](docs/PILOT_COLLECTION_KIT.md)
 - [Datasets e auditoria](docs/DATASETS.md)

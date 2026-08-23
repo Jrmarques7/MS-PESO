@@ -1,5 +1,18 @@
 # Registro de decisões
 
+## 2026-08-23 — Expor um adaptador HTTP bloqueado por padrão
+
+**Decisão:** o MS-PESO passa a fornecer um microsserviço stateless para teste
+de contrato e futura integração. Ele usa chave de API, limita o upload, apaga a
+imagem temporária e devolve qualidade, intervalo e identidade verificável do
+modelo. O serviço não conhece fazenda, lote ou animal.
+
+**Segurança:** o descritor atual continua `candidate_unapproved`. Sem uma opção
+explícita de ambiente interno, a prontidão responde `model_not_promoted` e o
+endpoint não executa inferência. Mesmo no modo interno, a resposta conserva o
+bloqueio comercial. O carregador do futuro pacote promovido será ligado somente
+após as revisões jurídica, externa, operacional e humana.
+
 ## 2026-08-23 — Separar inferência interna do futuro microsserviço
 
 **Decisão:** criar um pacote local de candidato que autentica checkpoint,
@@ -12,7 +25,9 @@ mesmo pacote também não pode transformar passagem técnica em autorização.
 
 **Consequência:** a saída mantém `commercial_use_allowed: false` e autorização
 bloqueada. O descritor rejeita estados de produção, artefatos alterados e
-avaliação tecnicamente reprovada. O microsserviço permanece fora deste projeto.
+avaliação tecnicamente reprovada. Naquela etapa, o microsserviço permaneceu fora
+do escopo; a decisão seguinte de expor um adaptador HTTP preserva essa separação
+interna e substitui apenas a localização do transporte.
 
 ## 2026-08-23 — Consumir o teste uma vez com critérios pré-registrados
 

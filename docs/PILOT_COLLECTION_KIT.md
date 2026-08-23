@@ -255,8 +255,9 @@ O limite inferior é truncado em zero sem excluir pesos fisicamente possíveis.
 
 Esse pacote é exclusivamente interno e continua bloqueado para exploração
 comercial. Ele não confirma bovino, raça, pose lateral, corpo inteiro, oclusão
-ou domínio validado. Também não contém servidor HTTP: o microsserviço pertence
-à aplicação separada do ponto 7 e consumirá este núcleo apenas no futuro.
+ou domínio validado. O adaptador HTTP do ponto 7 vive separado desse núcleo no
+pacote `ms_peso.service`, não conhece os conceitos de fazenda ou lote e recusa o
+candidato por padrão. A aplicação consumidora será integrada somente depois.
 
 ## Gate antes do treinamento
 

@@ -43,6 +43,11 @@ linhas do componente.
 | `commercial_model_package.py` | verificar a cadeia do candidato interno |
 | `commercial_inference.py` | estimar peso e intervalo do candidato verificado |
 | `predict_commercial.py` | orquestrar qualidade e inferência comercial interna |
+| `service/backend.py` | adaptar o pacote verificado ao ciclo de vida do serviço |
+| `service/http_guard.py` | recusar chave inválida e corpo excessivo antes do parser |
+| `service/uploads.py` | validar, limitar e remover uploads temporários |
+| `service/payloads.py` | montar o contrato HTTP de resposta |
+| `service/app.py` | autenticar e expor somente as rotas HTTP |
 | `importers/` | converter uma fonte externa para o contrato MS-PESO |
 | futuros módulos de inferência | carregar o artefato e produzir estimativas |
 | futuros módulos de coleta | adquirir imagens e metadados de campo |

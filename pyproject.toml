@@ -18,10 +18,22 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+service = [
+  "fastapi>=0.115,<1",
+  "python-multipart>=0.0.18,<1",
+  "uvicorn>=0.30,<1",
+]
 dev = [
+  "fastapi>=0.115,<1",
+  "httpx2>=2,<3",
+  "python-multipart>=0.0.18,<1",
   "pytest>=7.4,<9",
   "ruff>=0.6,<1",
+  "uvicorn>=0.30,<1",
 ]
+
+[project.scripts]
+ms-peso-service = "ms_peso.service.run:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

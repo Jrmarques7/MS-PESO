@@ -101,7 +101,8 @@ R² será relatado, mas nunca utilizado sozinho como critério de sucesso.
 
 ### M4 — Produto
 
-- API de inferência e interface de captura guiada;
+- adaptador HTTP de inferência criado e bloqueado até a promoção do modelo;
+- interface de captura guiada na aplicação consumidora;
 - estimativa de incerteza e regra de rejeição;
 - monitoramento de deriva e rotina de recalibração;
 - validação operacional e análise de custos.

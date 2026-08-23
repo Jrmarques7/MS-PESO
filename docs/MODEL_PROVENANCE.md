@@ -77,11 +77,12 @@ política de qualidade e model card. A inferência só carrega o modelo depois q
 a foto passa no gate técnico e retorna estimativa com intervalo conformal. Toda
 saída mantém autorização bloqueada e lista as revisões pendentes.
 
-Esse núcleo é uma biblioteca/CLI interna, não o microsserviço do produto. Uma
-API futura poderá consumi-lo em outra aplicação somente depois de existir um
-pacote realmente treinado, validado e aprovado. O descritor atual rejeita
-qualquer tentativa de declarar `production_ready` ou
-`commercial_use_allowed` como verdadeiro.
+Esse núcleo permanece uma biblioteca/CLI interna e não conhece transporte. Um
+adaptador HTTP separado dentro deste repositório pode consumi-lo para teste de
+contrato, mas fica indisponível por padrão enquanto não existir um pacote
+realmente treinado, validado e aprovado. O descritor atual rejeita qualquer
+tentativa de declarar `production_ready` ou `commercial_use_allowed` como
+verdadeiro.
 
 ## Gate de promoção
 
