@@ -163,6 +163,37 @@ checkpoint da melhor validação, o histórico de ajuste e o manifesto resolvido
 de treino/validação. Não há avaliação ou arquivo de previsões de `calibration`
 ou `test`; ambos continuam lacrados para as próximas etapas.
 
+## Calibrar a incerteza sem consultar o teste
+
+Depois que o ajuste terminar, calcule o hash que identifica seu checkpoint:
+
+```powershell
+(Get-FileHash `
+  artifacts/commercial_fit_v001/best_model.pt `
+  -Algorithm SHA256).Hash.ToLower()
+```
+
+Copie o resultado para `model.checkpoint_sha256` em
+`configs/efficientnet_b0_commercial_calibration.yaml` e execute:
+
+```powershell
+python -m ms_peso.calibrate `
+  --config configs/efficientnet_b0_commercial_calibration.yaml
+```
+
+O comando autentica o checkpoint, o manifesto, o snapshot e o relatório do
+split antes de abrir imagens. Somente `calibration` é carregado. O método usa
+split conformal com erro absoluto e agrupa por `animal_id`: quando existem
+várias imagens ou visitas, o pior erro do animal é seu único escore. Isso evita
+uma falsa multiplicação da amostra e produz um intervalo mais conservador.
+
+A cobertura padrão é 90%, que exige no mínimo nove animais independentes de
+calibração para que o quantil finito exista. Se a coleta não sustentar a
+cobertura configurada, a execução falha sem criar artefatos. A saída imutável
+contém `calibration.json`, `predictions_calibration.csv` e
+`resolved_calibration_manifest.csv`. Nenhuma imagem ou métrica de `test` é
+produzida, e o modelo permanece `not_promoted`.
+
 ## Gate antes do treinamento
 
 Nenhuma imagem entra no candidato comercial enquanto a auditoria não estiver

@@ -87,6 +87,7 @@ R² será relatado, mas nunca utilizado sozinho como critério de sucesso.
 - registrar balança, câmera e condições;
 - auditar direitos, deduplicar e congelar snapshot antes da divisão;
 - separar treino, validação, calibração e teste por animal;
+- calibrar intervalos por animal sem reutilizar validação ou teste;
 - comparar modelo público, ajuste fino e modelo local.
 
 ### M3 — Robustez

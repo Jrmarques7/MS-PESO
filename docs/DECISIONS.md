@@ -1,5 +1,20 @@
 # Registro de decisões
 
+## 2026-08-23 — Calibrar incerteza por animal sem consultar o teste
+
+**Decisão:** usar split conformal com o maior erro absoluto de cada
+`animal_id` na partição independente de calibração. O checkpoint de ajuste é
+fixado por SHA-256 e precisa apontar para o mesmo snapshot comercial.
+
+**Motivo:** imagens e visitas do mesmo animal não são independentes. Contá-las
+como observações separadas estreitaria artificialmente o intervalo. O máximo
+por animal preserva a unidade do split e é deliberadamente conservador.
+
+**Consequência:** o quantil finito só é produzido quando o número de animais
+sustenta a cobertura solicitada; 90% exige pelo menos nove animais. Somente a
+partição de calibração é aberta, o teste permanece intocado e o resultado não
+promove nem autoriza comercialmente o modelo.
+
 ## 2026-08-23 — Isolar o ajuste comercial de calibração e teste
 
 **Decisão:** criar o workflow `commercial_fit`, que aceita somente

@@ -1,0 +1,23 @@
+project:
+  name: ms-peso-efficientnet-b0-commercial-calibration
+  seed: 42
+  workflow: commercial_calibration
+
+data:
+  manifest: data/processed/pilot_commercial_split_v001.csv
+  split_report: artifacts/commercial_split/v001.json
+  image_root: data/raw/pilot
+  view: left
+  image_size: 224
+  batch_size: 32
+  num_workers: 2
+
+model:
+  checkpoint: artifacts/commercial_fit_v001/best_model.pt
+  checkpoint_sha256: REPLACE_WITH_CHECKPOINT_SHA256
+
+calibration:
+  target_coverage: 0.90
+
+output:
+  directory: artifacts/commercial_calibration_v001

@@ -84,6 +84,7 @@ Os critérios completos estão em
   de integridade desde o snapshot.
 - [x] Ajuste comercial protegido criado com inicialização aleatória e acesso
   restrito a treino/validação.
+- [x] Calibração conformal protegida criada por animal, sem acesso ao teste.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -201,6 +202,21 @@ proveniência, recusa qualquer checkpoint inicial e abre somente imagens de
 `resolved_fit_manifest.csv`; não produz métricas nem previsões de calibração ou
 teste. O checkpoint permanece `not_promoted` e `commercial_use_allowed: false`
 até as etapas independentes de calibração, teste e revisão de promoção.
+
+Depois do ajuste, registre o SHA-256 de `best_model.pt` em
+`configs/efficientnet_b0_commercial_calibration.yaml` e execute:
+
+```bash
+python -m ms_peso.calibrate \
+  --config configs/efficientnet_b0_commercial_calibration.yaml
+```
+
+A calibração confere o checkpoint e toda a cadeia de dados, abre somente
+`calibration` e calcula um intervalo conformal agrupado por `animal_id`. Cada
+animal contribui com seu maior erro absoluto, evitando tratar fotos repetidas
+como observações independentes. Para cobertura de 90%, são necessários ao
+menos nove animais de calibração; uma amostra menor é rejeitada. O conjunto
+`test` permanece intocado e o candidato continua não promovido.
 
 A arquitetura ConvNeXt-Tiny também foi avaliada, mas não substituiu o B2:
 

@@ -50,6 +50,14 @@ etapa. O artefato resultante é deliberadamente marcado como não promovido e
 sem autorização comercial; a execução técnica não substitui a revisão dos
 direitos nem os gates posteriores.
 
+O modo `commercial_calibration` aceita exclusivamente esse checkpoint de
+ajuste, fixado por SHA-256 e ligado ao mesmo snapshot e relatório de split. Ele
+abre somente a partição `calibration` e calcula um raio conformal com o maior
+erro absoluto de cada animal. Fotos ou visitas repetidas não aumentam
+artificialmente o tamanho estatístico da calibração. O relatório registra a
+cobertura solicitada, o quantil, o número de animais e que o teste permaneceu
+intocado; o resultado ainda não promove nem autoriza o modelo.
+
 ## Gate de promoção
 
 Um pacote comercial futuro deve usar outro `model_id`, outro descritor e outro
