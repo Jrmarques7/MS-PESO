@@ -45,3 +45,7 @@ Os modelos em `data/templates/` iniciam o manifesto da coleta e o registro de
 autorizações. Copie-os para `data/interim/`, remova as linhas de exemplo e não
 versione documentos assinados ou dados pessoais. A política completa e o
 comando de auditoria estão em `docs/PILOT_COLLECTION_KIT.md`.
+
+Após aprovação, `ms_peso.seal_collection` cria em `data/processed/` um
+manifesto canônico com `image_sha256` e `image_dhash`. O arquivo selado não deve
+ser editado nem sobrescrito; uma correção gera um novo snapshot.

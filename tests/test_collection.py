@@ -49,6 +49,7 @@ def collection_policy() -> CollectionPolicy:
         required_quality="accepted",
         require_scale_marker=True,
         require_commercial_training_rights=True,
+        near_duplicate_hamming_distance=4,
     )
 
 

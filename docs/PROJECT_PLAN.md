@@ -84,6 +84,7 @@ R² será relatado, mas nunca utilizado sozinho como critério de sucesso.
 - escolher raça, sexo e faixa de peso;
 - coletar de 100 a 200 animais, preferencialmente em mais de uma visita;
 - registrar balança, câmera e condições;
+- auditar direitos, deduplicar e congelar snapshot antes da divisão;
 - comparar modelo público, ajuste fino e modelo local.
 
 ### M3 — Robustez

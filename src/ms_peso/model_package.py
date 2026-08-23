@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import hashlib
 import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from ms_peso.config import load_yaml_config
+from ms_peso.integrity import calculate_sha256
 
 SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 
@@ -109,15 +109,6 @@ def load_model_descriptor(path: str | Path) -> ModelDescriptor:
         limitations=tuple(item.strip() for item in limitations),
         model_card_path=model_card_path,
     )
-
-
-def calculate_sha256(path: str | Path) -> str:
-    file_path = Path(path)
-    digest = hashlib.sha256()
-    with file_path.open("rb") as file:
-        for block in iter(lambda: file.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
 
 
 def verify_model_package(descriptor: ModelDescriptor) -> None:

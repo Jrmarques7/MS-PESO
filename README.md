@@ -78,6 +78,8 @@ Os critérios completos estão em
   verticais, excessivamente escuras, claras, saturadas ou borradas.
 - [x] B2 marcado como somente pesquisa e separado da futura trilha comercial.
 - [x] Kit de coleta piloto criado com templates, direitos e auditor automático.
+- [x] Selagem reproduzível da coleta criada com SHA-256, dHash, deduplicação e
+  proteção contra sobrescrita.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura

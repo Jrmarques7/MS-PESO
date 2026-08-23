@@ -38,3 +38,4 @@ max_capture_weight_delta_minutes: 30
 required_quality: accepted
 require_scale_marker: true
 require_commercial_training_rights: true
+near_duplicate_hamming_distance: 4

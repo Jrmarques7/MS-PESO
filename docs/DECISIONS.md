@@ -1,5 +1,32 @@
 # Registro de decisões
 
+## 2026-08-22 — Não calibrar incerteza com validação ou teste reutilizados
+
+**Decisão:** não estimar intervalo conformal nem regra estatística de rejeição
+do B2 usando as previsões de teste ou a validação que selecionou o checkpoint.
+
+**Motivo:** o teste já mediu o resultado final e a validação já influenciou a
+escolha da época. Reutilizá-los como calibração produziria cobertura otimista e
+uma aparência indevida de segurança, principalmente com apenas 154 animais.
+
+**Consequência:** o futuro snapshot próprio reservará animais para calibração
+independente, separados de treino, validação e teste. Até lá, a rejeição cobre
+somente qualidade técnica e domínio conhecido, sem intervalo probabilístico.
+
+## 2026-08-22 — Selar a coleta antes da divisão e do treinamento
+
+**Decisão:** toda coleta aprovada recebe manifesto canônico, SHA-256 de cada
+arquivo, dHash perceptual, `snapshot_id` e relatório de proveniência antes de
+criar splits ou treinar modelos.
+
+**Motivo:** caminhos diferentes podem conter a mesma imagem e a ordem de um CSV
+não deve mudar a identidade do conjunto. Pesos, políticas ou autorizações
+alterados também precisam gerar proveniência diferente e auditável.
+
+**Consequência:** duplicatas exatas bloqueiam a selagem; similaridade perceptual
+gera alerta para revisão humana. Snapshots existentes nunca são sobrescritos.
+Uma correção cria nova versão e preserva o histórico anterior.
+
 ## 2026-08-22 — Separar irreversivelmente B2 e candidato comercial
 
 **Decisão:** classificar o B2 como modelo somente de pesquisa, com

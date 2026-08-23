@@ -39,6 +39,7 @@ class CollectionPolicy:
     required_quality: str
     require_scale_marker: bool
     require_commercial_training_rights: bool
+    near_duplicate_hamming_distance: int
 
 
 @dataclass(frozen=True)
@@ -140,6 +141,13 @@ def load_collection_policy(path: str | Path) -> CollectionPolicy:
     max_delta = config.get("max_capture_weight_delta_minutes")
     if isinstance(max_delta, bool) or not isinstance(max_delta, int) or max_delta <= 0:
         raise ValueError("max_capture_weight_delta_minutes deve ser inteiro positivo.")
+    near_duplicate_distance = config.get("near_duplicate_hamming_distance")
+    if (
+        isinstance(near_duplicate_distance, bool)
+        or not isinstance(near_duplicate_distance, int)
+        or not 0 <= near_duplicate_distance <= 64
+    ):
+        raise ValueError("near_duplicate_hamming_distance deve estar entre 0 e 64.")
 
     return CollectionPolicy(
         policy_id=_required_text(config, "policy_id"),
@@ -156,6 +164,7 @@ def load_collection_policy(path: str | Path) -> CollectionPolicy:
         require_commercial_training_rights=_required_bool(
             config, "require_commercial_training_rights"
         ),
+        near_duplicate_hamming_distance=near_duplicate_distance,
     )
 
 

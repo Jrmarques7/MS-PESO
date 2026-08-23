@@ -92,13 +92,36 @@ Código de saída 0 significa aprovação. Código 2 significa rejeição; o JSO
 os problemas. `--skip-image-checks` serve somente para revisar metadados durante
 o preenchimento e sempre produz aviso. Ele não aprova a coleta final.
 
+## Selar uma coleta aprovada
+
+Quando a auditoria estiver limpa, gere um snapshot imutável:
+
+```powershell
+python -m ms_peso.seal_collection `
+  --manifest data/interim/pilot_manifest.csv `
+  --authorizations data/interim/authorization_registry.csv `
+  --image-root data/raw/pilot `
+  --output-manifest data/processed/pilot_snapshot_v001.csv `
+  --output-report artifacts/collection_snapshot/v001.json
+```
+
+A selagem repete toda a auditoria com imagens, adiciona SHA-256 e dHash a cada
+linha e gera um `snapshot_id` canônico. Cópias binariamente idênticas bloqueiam
+o processo. Imagens visualmente muito parecidas são mantidas, mas aparecem como
+alerta para revisão humana — elas podem ser visitas válidas do mesmo animal.
+
+O relatório também registra os hashes do manifesto de origem, autorizações,
+política de coleta, política de qualidade e manifesto selado. Um caminho de
+saída existente nunca é sobrescrito: alterações geram `v002`, `v003` e assim
+por diante.
+
 ## Gate antes do treinamento
 
 Nenhuma imagem entra no candidato comercial enquanto a auditoria não estiver
 aprovada. Depois da coleta, ainda será necessário:
 
 - conferir visualmente animal, pose, corpo inteiro e oclusões;
-- detectar duplicatas perceptuais, além de caminhos duplicados;
+- revisar os pares perceptualmente semelhantes apontados pela selagem;
 - congelar o manifesto e registrar seu SHA-256;
 - separar treino, validação e teste por `animal_id`;
 - reservar, quando possível, outra fazenda ou período como teste externo;
