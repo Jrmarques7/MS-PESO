@@ -225,7 +225,10 @@ python -m ms_peso.audit_point_cloud_geometry \
 ```
 
 Esse gate rejeitou a fusão antes do treinamento: a correlação entre altura e
-resíduo do B2 na validação foi -0,016, praticamente nula.
+resíduo do B2 na validação foi -0,016, praticamente nula. As vistas direita e
+superior também foram auditadas; seus valores foram -0,106 e +0,210. O
+argumento opcional `--reference-manifest` permite alinhar a geometria de outra
+vista ao RGB lateral pelo mesmo animal/evento.
 
 A variante experimental com amostragem moderada por faixa obteve MAE pontual
 de 32,55 kg:

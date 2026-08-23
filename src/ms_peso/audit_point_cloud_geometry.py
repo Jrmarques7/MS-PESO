@@ -33,6 +33,10 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--depth-image-column", default="depth_image_path")
     parser.add_argument("--point-cloud-column", default="point_cloud_path")
     parser.add_argument("--reference-checkpoint")
+    parser.add_argument(
+        "--reference-manifest",
+        help="Manifesto RGB da referência, alinhado por animal e evento.",
+    )
     parser.add_argument("--background-percentile", type=float, default=100.0)
     parser.add_argument("--foreground-margin-mm", type=float, default=150.0)
     parser.add_argument("--max-depth-mm", type=float, default=6000.0)
@@ -50,6 +54,10 @@ def pearson_correlation(first: list[float], second: list[float]) -> float:
 def fit_height_regression(
     heights: list[float], weights: list[float]
 ) -> tuple[float, float]:
+    if len(heights) != len(weights) or len(heights) < 2:
+        raise ValueError("Regressão exige vetores do mesmo tamanho com duas amostras.")
+    if np.std(heights) < 1e-12:
+        raise ValueError("Regressão exige variação nas alturas.")
     design = np.column_stack((np.ones(len(heights)), heights))
     intercept, slope = np.linalg.lstsq(design, weights, rcond=None)[0]
     return float(intercept), float(slope)
@@ -59,6 +67,45 @@ def predict_height_regression(
     heights: list[float], *, intercept: float, slope: float
 ) -> list[float]:
     return (intercept + slope * np.asarray(heights)).tolist()
+
+
+def align_reference_validation(
+    reference_rows: list[dict[str, str]],
+    geometry_rows: list[dict[str, str]],
+    geometry_heights: list[float],
+) -> tuple[list[dict[str, str]], list[float]]:
+    if len(geometry_rows) != len(geometry_heights):
+        raise ValueError("Linhas geométricas e alturas possuem tamanhos diferentes.")
+    height_by_event: dict[tuple[str, str], tuple[float, float]] = {}
+    for row, height in zip(geometry_rows, geometry_heights, strict=True):
+        key = (row["animal_id"], row["event_id"])
+        if key in height_by_event:
+            raise ValueError(f"Evento geométrico duplicado: {key}")
+        height_by_event[key] = (height, float(row["weight_kg"]))
+
+    aligned_rows: list[dict[str, str]] = []
+    aligned_heights: list[float] = []
+    seen_events: set[tuple[str, str]] = set()
+    for row in reference_rows:
+        if row.get("split") != "val":
+            continue
+        key = (row["animal_id"], row["event_id"])
+        if key not in height_by_event:
+            continue
+        if key in seen_events:
+            raise ValueError(f"Evento de referência duplicado: {key}")
+        height, geometry_weight = height_by_event[key]
+        if not np.isclose(float(row["weight_kg"]), geometry_weight):
+            raise ValueError(f"Peso conflitante no evento alinhado: {key}")
+        seen_events.add(key)
+        aligned_rows.append(row)
+        aligned_heights.append(height)
+
+    missing_events = set(height_by_event) - seen_events
+    if missing_events:
+        preview = sorted(missing_events)[:5]
+        raise ValueError(f"Eventos geométricos ausentes na referência: {preview}")
+    return aligned_rows, aligned_heights
 
 
 def _summarize(values: list[float]) -> dict[str, float]:
@@ -77,7 +124,7 @@ def _evaluate_reference(
     manifest_path: Path,
     image_root: str | Path | None,
 ) -> dict[str, object]:
-    checkpoint = torch.load(checkpoint_path, map_location="cpu")
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
     model = build_model(
         checkpoint["architecture"],
         pretrained=False,
@@ -174,6 +221,7 @@ def main() -> None:
         heights_by_split["train"], weights_by_split["train"]
     )
     report: dict[str, object] = {
+        "geometry_manifest": str(manifest_path),
         "guardrail": "test excluído da extração e da análise",
         "samples": {split: len(rows_by_split[split]) for split in ("train", "val")},
         "parameters": {
@@ -208,13 +256,30 @@ def main() -> None:
         "quality": {name: _summarize(values) for name, values in quality.items()},
     }
     if args.reference_checkpoint:
-        report["reference_validation"] = _evaluate_reference(
-            args.reference_checkpoint,
+        reference_manifest_path = (
+            Path(args.reference_manifest) if args.reference_manifest else manifest_path
+        )
+        reference_rows = read_manifest(reference_manifest_path)
+        validate_rows(
+            reference_rows,
+            manifest_path=reference_manifest_path,
+            image_root=args.image_root,
+            check_images=True,
+        )
+        aligned_rows, aligned_heights = align_reference_validation(
+            reference_rows,
             rows_by_split["val"],
             heights_by_split["val"],
-            manifest_path=manifest_path,
+        )
+        reference_report = _evaluate_reference(
+            args.reference_checkpoint,
+            aligned_rows,
+            aligned_heights,
+            manifest_path=reference_manifest_path,
             image_root=args.image_root,
         )
+        reference_report["manifest"] = str(reference_manifest_path)
+        report["reference_validation"] = reference_report
 
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)

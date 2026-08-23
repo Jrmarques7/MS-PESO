@@ -407,6 +407,19 @@ altura e o resíduo real menos predito do B2 foi -0,016, praticamente zero. A
 altura também apresentou correlação de apenas aproximadamente +0,36 com as
 alturas manualmente medidas, evidenciando uma segmentação física ainda ruidosa.
 
+O gate foi repetido nas outras orientações, sempre alinhando a geometria com as
+predições RGB laterais do mesmo animal/evento:
+
+| Vista geométrica | Correlação peso treino | Correlação peso validação | MAE linear validação | Correlação com resíduo B2 |
+|---|---:|---:|---:|---:|
+| lateral esquerda | +0,437 | +0,402 | 46,89 kg | -0,016 |
+| lateral direita | +0,341 | +0,149 | 50,96 kg | -0,106 |
+| superior | +0,231 | +0,258 | 49,44 kg | +0,210 |
+
+Nenhuma vista apresentou simultaneamente poder preditivo estável e sinal
+complementar forte. Como os PLY não publicam transformações extrínsecas entre
+câmeras, suas coordenadas também não foram sobrepostas diretamente.
+
 **Decisão do gate:** não integrar a altura ao EfficientNet, não gastar uma
 execução GPU e não abrir o teste. Preservar o leitor PLY e a auditoria para uma
 futura segmentação 3D mais fiel.
