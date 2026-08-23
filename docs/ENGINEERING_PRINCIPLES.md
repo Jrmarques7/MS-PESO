@@ -31,6 +31,7 @@ linhas do componente.
 | `validate_collection.py` | somente orquestrar a auditoria da coleta |
 | `seal_collection.py` | somente orquestrar a selagem da coleta aprovada |
 | `prepare_commercial_manifest.py` | somente orquestrar o split comercial |
+| `commercial_training.py` | validar o contrato e a proveniência do ajuste comercial |
 | `importers/` | converter uma fonte externa para o contrato MS-PESO |
 | futuros módulos de inferência | carregar o artefato e produzir estimativas |
 | futuros módulos de coleta | adquirir imagens e metadados de campo |

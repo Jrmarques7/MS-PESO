@@ -12,6 +12,8 @@ from torch.optim import AdamW
 from torch.utils.data import DataLoader, WeightedRandomSampler
 
 from ms_peso.artifacts import save_checkpoint, save_json, save_predictions
+from ms_peso.collection_snapshot import verify_snapshot_integrity
+from ms_peso.commercial_training import validate_commercial_fit_contract
 from ms_peso.config import load_yaml_config
 from ms_peso.dataset import (
     CattleWeightDataset,
@@ -49,6 +51,9 @@ def main() -> None:
         config["output"]["directory"] = str(args.output_dir)
     seed = int(config["project"]["seed"])
     set_global_seed(seed)
+    workflow = config["project"].get("workflow", "research")
+    if workflow not in {"research", "commercial_fit"}:
+        raise ValueError(f"Workflow de treinamento desconhecido: {workflow!r}")
 
     data_config = config["data"]
     depth_image_column = data_config.get("depth_image_column")
@@ -60,17 +65,31 @@ def main() -> None:
     manifest_path = Path(data_config["manifest"])
     image_root = data_config.get("image_root")
     rows = read_manifest(manifest_path)
-    validate_rows(
-        rows,
-        manifest_path=manifest_path,
-        image_root=image_root,
-        check_images=True,
-        additional_image_columns=tuple(
-            column
-            for column in (depth_image_column, secondary_image_column)
-            if column
-        ),
-    )
+    output_dir = Path(config["output"]["directory"])
+    commercial_contract = None
+    if workflow == "commercial_fit":
+        split_report = data_config.get("split_report")
+        if not split_report:
+            raise ValueError("O ajuste comercial exige data.split_report.")
+        commercial_contract = validate_commercial_fit_contract(
+            config,
+            rows,
+            manifest_path=manifest_path,
+            split_report_path=split_report,
+            output_dir=output_dir,
+        )
+    else:
+        validate_rows(
+            rows,
+            manifest_path=manifest_path,
+            image_root=image_root,
+            check_images=True,
+            additional_image_columns=tuple(
+                column
+                for column in (depth_image_column, secondary_image_column)
+                if column
+            ),
+        )
 
     selected_view = data_config.get("view")
     if selected_view and any("view" in row for row in rows):
@@ -80,7 +99,7 @@ def main() -> None:
                 f"Nenhuma imagem encontrada para a vista {selected_view!r}."
             )
 
-    if not all(row.get("split") for row in rows):
+    if workflow == "research" and not all(row.get("split") for row in rows):
         if any(row.get("split") for row in rows):
             raise ValueError("A coluna split está parcialmente preenchida.")
         rows = grouped_split(
@@ -92,16 +111,49 @@ def main() -> None:
             stratify_bins=int(data_config["stratify_bins"]),
         )
 
+    fit_splits = ("train", "val") if workflow == "commercial_fit" else (
+        "train",
+        "val",
+        "test",
+    )
     split_rows = {
         split: [row for row in rows if row["split"] == split]
-        for split in ("train", "val", "test")
+        for split in fit_splits
     }
     if any(not values for values in split_rows.values()):
-        raise ValueError("train, val e test precisam conter ao menos uma amostra.")
+        required = ", ".join(fit_splits)
+        raise ValueError(f"{required} precisam conter ao menos uma amostra.")
 
-    output_dir = Path(config["output"]["directory"])
+    rows_to_open = (
+        [row for split in fit_splits for row in split_rows[split]]
+        if workflow == "commercial_fit"
+        else rows
+    )
+    if workflow == "commercial_fit":
+        validate_rows(
+            rows_to_open,
+            manifest_path=manifest_path,
+            image_root=image_root,
+            check_images=True,
+            additional_image_columns=tuple(
+                column
+                for column in (depth_image_column, secondary_image_column)
+                if column
+            ),
+        )
+        verify_snapshot_integrity(
+            rows_to_open,
+            manifest_path=manifest_path,
+            image_root=image_root,
+        )
+
     output_dir.mkdir(parents=True, exist_ok=True)
-    write_manifest(rows, output_dir / "resolved_manifest.csv")
+    resolved_manifest_name = (
+        "resolved_fit_manifest.csv"
+        if workflow == "commercial_fit"
+        else "resolved_manifest.csv"
+    )
+    write_manifest(rows_to_open, output_dir / resolved_manifest_name)
 
     train_weights = [float(row["weight_kg"]) for row in split_rows["train"]]
     target_mean = fmean(train_weights)
@@ -125,7 +177,7 @@ def main() -> None:
                 training=split == "train",
                 **common_dataset_arguments,
             )
-            for split in ("train", "val", "test")
+            for split in fit_splits
         }
     elif secondary_image_column:
         datasets = {
@@ -135,7 +187,7 @@ def main() -> None:
                 training=split == "train",
                 **common_dataset_arguments,
             )
-            for split in ("train", "val", "test")
+            for split in fit_splits
         }
     else:
         datasets = {
@@ -144,7 +196,7 @@ def main() -> None:
                 training=split == "train",
                 **common_dataset_arguments,
             )
-            for split in ("train", "val", "test")
+            for split in fit_splits
         }
     sampling_config = data_config.get("sampling")
     train_sampler = None
@@ -206,6 +258,61 @@ def main() -> None:
         target_std=target_std,
     )
     model.load_state_dict(fit_result.best_state_dict)
+
+    if workflow == "commercial_fit":
+        assert commercial_contract is not None
+        fit_report = {
+            "status": "fit_completed",
+            "workflow": workflow,
+            "device": str(device),
+            "seed": seed,
+            "architecture": model_config["architecture"],
+            "initialization": "random",
+            "commercial_use_allowed": False,
+            "promotion_status": "not_promoted",
+            "best_epoch": fit_result.best_epoch,
+            "best_validation_mae_kg": fit_result.best_validation_mae,
+            "number_of_animals": {
+                split: len({row["animal_id"] for row in split_rows[split]})
+                for split in fit_splits
+            },
+            "number_of_images": {
+                split: len(split_rows[split]) for split in fit_splits
+            },
+            "sampling": sampling_config or {"strategy": "uniform"},
+            "history": fit_result.history,
+            "held_out_partitions": ["calibration", "test"],
+            "calibration_evaluated": False,
+            "test_evaluated": False,
+            "source_snapshot_id": commercial_contract.snapshot_id,
+            "source_manifest_sha256": commercial_contract.manifest_sha256,
+            "source_split_report_sha256": commercial_contract.split_report_sha256,
+        }
+        save_checkpoint(
+            output_dir / "best_model.pt",
+            state_dict=fit_result.best_state_dict,
+            metadata={
+                "architecture": model_config["architecture"],
+                "dropout": float(model_config["dropout"]),
+                "target_mean": target_mean,
+                "target_std": target_std,
+                "config": config,
+                "epoch": fit_result.best_epoch,
+                "workflow": workflow,
+                "initialization": "random",
+                "commercial_use_allowed": False,
+                "promotion_status": "not_promoted",
+                "held_out_partitions": ["calibration", "test"],
+                "source_snapshot_id": commercial_contract.snapshot_id,
+                "source_manifest_sha256": commercial_contract.manifest_sha256,
+                "source_split_report_sha256": (
+                    commercial_contract.split_report_sha256
+                ),
+            },
+        )
+        save_json(output_dir / "fit_metrics.json", fit_report)
+        print(json.dumps(fit_report, indent=2, ensure_ascii=False))
+        return
 
     test_result = evaluate_model(
         model,

@@ -82,6 +82,8 @@ Os critérios completos estão em
   proteção contra sobrescrita.
 - [x] Divisão comercial por animal criada com calibração independente e cadeia
   de integridade desde o snapshot.
+- [x] Ajuste comercial protegido criado com inicialização aleatória e acesso
+  restrito a treino/validação.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -185,6 +187,20 @@ O baseline EfficientNet-B0 com amostragem uniforme é reproduzido com:
 ```bash
 python -m ms_peso.train --config configs/efficientnet_b0_rgb.yaml
 ```
+
+O candidato baseado em dados próprios usa uma trilha separada:
+
+```bash
+python -m ms_peso.train --config configs/efficientnet_b0_commercial_fit.yaml
+```
+
+Esse modo exige `pretrained: false`, `initialization: random`, um manifesto com
+as quatro partições e o relatório aprovado do split. Ele verifica a
+proveniência, recusa qualquer checkpoint inicial e abre somente imagens de
+`train` e `val`. A saída contém `best_model.pt`, `fit_metrics.json` e
+`resolved_fit_manifest.csv`; não produz métricas nem previsões de calibração ou
+teste. O checkpoint permanece `not_promoted` e `commercial_use_allowed: false`
+até as etapas independentes de calibração, teste e revisão de promoção.
 
 A arquitetura ConvNeXt-Tiny também foi avaliada, mas não substituiu o B2:
 

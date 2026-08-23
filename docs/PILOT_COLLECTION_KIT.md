@@ -143,6 +143,26 @@ de época ou decisões de hiperparâmetros. Com poucos animais, a calibração s
 estatisticamente grosseira; a validade do intervalo depende do tamanho e da
 representatividade efetivamente coletados.
 
+## Ajustar o candidato sem consultar os conjuntos reservados
+
+Depois de gerar os arquivos `v001` acima, ajuste apenas treino e validação:
+
+```powershell
+python -m ms_peso.train `
+  --config configs/efficientnet_b0_commercial_fit.yaml
+```
+
+Antes de inicializar o modelo, o comando confere o relatório aprovado, o hash
+do manifesto, as quatro partições, as contagens e a ausência de vazamento por
+animal. A arquitetura começa aleatoriamente: pesos ImageNet, B2, retomadas e
+outros checkpoints iniciais são bloqueados. Durante o ajuste, somente os
+arquivos de `train` e `val` têm integridade e imagem abertas.
+
+A saída `artifacts/commercial_fit_v001/` é imutável. Ela registra apenas o
+checkpoint da melhor validação, o histórico de ajuste e o manifesto resolvido
+de treino/validação. Não há avaliação ou arquivo de previsões de `calibration`
+ou `test`; ambos continuam lacrados para as próximas etapas.
+
 ## Gate antes do treinamento
 
 Nenhuma imagem entra no candidato comercial enquanto a auditoria não estiver

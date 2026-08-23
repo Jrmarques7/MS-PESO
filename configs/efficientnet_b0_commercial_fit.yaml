@@ -1,0 +1,29 @@
+project:
+  name: ms-peso-efficientnet-b0-commercial-fit
+  seed: 42
+  workflow: commercial_fit
+
+data:
+  manifest: data/processed/pilot_commercial_split_v001.csv
+  split_report: artifacts/commercial_split/v001.json
+  image_root: data/raw/pilot
+  view: left
+  image_size: 224
+  batch_size: 32
+  num_workers: 2
+
+model:
+  architecture: efficientnet_b0
+  pretrained: false
+  initialization: random
+  dropout: 0.20
+
+training:
+  epochs: 100
+  learning_rate: 0.0003
+  weight_decay: 0.0001
+  huber_delta: 1.0
+  patience: 12
+
+output:
+  directory: artifacts/commercial_fit_v001

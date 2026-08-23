@@ -42,6 +42,14 @@ Imagens próprias sem pesagem podem ser usadas em pré-treinamento
 auto-supervisionado, desde que possuam os mesmos direitos. Depois, o modelo é
 ajustado usando o subconjunto ligado a pesagens confiáveis.
 
+O modo `commercial_fit` implementa a fronteira inicial dessa trilha. Ele exige
+um split comercial aprovado, confere o SHA-256 do manifesto e suas contagens,
+recusa pesos ou checkpoints iniciais e constrói carregadores somente para
+treino e validação. Calibração e teste não são abertos nem avaliados nessa
+etapa. O artefato resultante é deliberadamente marcado como não promovido e
+sem autorização comercial; a execução técnica não substitui a revisão dos
+direitos nem os gates posteriores.
+
 ## Gate de promoção
 
 Um pacote comercial futuro deve usar outro `model_id`, outro descritor e outro

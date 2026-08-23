@@ -1,5 +1,20 @@
 # Registro de decisões
 
+## 2026-08-23 — Isolar o ajuste comercial de calibração e teste
+
+**Decisão:** criar o workflow `commercial_fit`, que aceita somente
+inicialização aleatória e um split comercial aprovado. O processo constrói
+datasets e carregadores exclusivamente para treino e validação.
+
+**Motivo:** bloquear por código o reaproveitamento de ImageNet, B2 ou qualquer
+checkpoint e impedir que calibração/teste influenciem normalização, seleção de
+época ou hiperparâmetros.
+
+**Consequência:** o relatório, o hash e as contagens do manifesto são
+verificados antes do ajuste. A saída não contém métricas ou previsões dos
+conjuntos reservados, não pode sobrescrever uma versão existente e permanece
+marcada como `not_promoted` e `commercial_use_allowed: false`.
+
 ## 2026-08-22 — Reservar calibração independente no split comercial
 
 **Decisão:** a trilha comercial usa quatro partições agrupadas por animal:
