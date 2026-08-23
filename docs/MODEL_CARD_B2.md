@@ -76,7 +76,8 @@ mesma divisão pequena; não constituem validação externa.
 - nenhuma validação externa por fazenda, câmera ou período;
 - os dois animais de teste abaixo de 350 kg tiveram MAE aproximado de 133 kg;
 - tendência a regressão para a média em faixas raras;
-- ausência atual de controle automático de pose, animal e qualidade da foto;
+- gate técnico cobre resolução, exposição e nitidez, mas não confirma animal,
+  pose, vista lateral, corpo inteiro ou oclusão;
 - saída pontual sem intervalo individual de incerteza calibrado.
 
 ## Requisitos de captura para demonstração

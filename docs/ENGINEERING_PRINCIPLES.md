@@ -22,6 +22,7 @@ linhas do componente.
 | `artifacts.py` | persistir checkpoints, relatórios e predições |
 | `train.py` | somente orquestrar o caso de uso de treinamento |
 | `model_package.py` | validar identidade, integridade e domínio do artefato |
+| `image_quality.py` | medir a captura e aplicar uma política de qualidade |
 | `inference.py` | carregar o modelo congelado e estimar uma imagem |
 | `predict.py` | somente orquestrar a inferência pela linha de comando |
 | `importers/` | converter uma fonte externa para o contrato MS-PESO |

@@ -74,6 +74,8 @@ Os critérios completos estão em
 - [x] Inferência local do B2 implementada com verificação do checkpoint e saída
   JSON rastreável; smoke test em GPU reproduziu a previsão histórica com
   diferença inferior a 0,03 kg.
+- [x] Gate técnico de qualidade impede inferência em imagens pequenas,
+  verticais, excessivamente escuras, claras, saturadas ou borradas.
 - [ ] Coleta piloto de bovinos-alvo iniciada.
 
 ## Estrutura
@@ -244,13 +246,20 @@ O descritor verifica o SHA-256 antes de carregar o modelo:
 python -m ms_peso.predict \
   --image /caminho/para/bovino_lateral.png \
   --model models/b2_cowdb.yaml \
+  --quality-policy configs/image_quality.yaml \
   --device auto \
   --output artifacts/prediction.json
 ```
 
-A saída JSON registra a estimativa, dimensões originais, versão, arquitetura,
-hash, dispositivo e limitações. O B2 continua experimental, não está validado
-para Nelore e ainda não possui controle automático de qualidade da captura.
+A política de qualidade é aplicada antes de carregar o modelo. Ela verifica
+resolução, proporção horizontal, luminosidade, saturação de sombras/luzes e
+nitidez. Uma imagem recusada retorna código de saída 2, peso nulo e os motivos
+no JSON; uma imagem aprovada segue para a inferência. A saída também registra
+dimensões originais, versão, arquitetura, hash, dispositivo e limitações.
+
+Esse gate não detecta bovino, raça, vista lateral, corpo inteiro ou oclusão.
+Esses controles dependem de detector/segmentador e de imagens da coleta piloto.
+O B2 continua experimental e não está validado para Nelore.
 
 A variante experimental com amostragem moderada por faixa obteve MAE pontual
 de 32,55 kg:

@@ -1,5 +1,27 @@
 # Registro de decisões
 
+## 2026-08-22 — Bloquear inferência quando a qualidade técnica falhar
+
+**Decisão:** aplicar antes da inferência uma política versionada que rejeita
+imagens com resolução, proporção, exposição, saturação ou nitidez fora dos
+limites definidos. Uma rejeição produz JSON com peso nulo e motivos explícitos;
+o modelo não é carregado.
+
+**Motivo:** fotos tecnicamente inadequadas podem produzir um número plausível,
+mas sem sustentação. O gate reduz esse risco e permanece separado da inferência
+para que seus limites possam ser calibrados sem retreinar a EfficientNet.
+
+**Calibração inicial:** as métricas foram auditadas em 308 imagens laterais do
+CowDB. Os limites são conservadores e destinam-se a capturas claramente ruins,
+não a certificar conformidade zootécnica. As 308 imagens passaram pela política
+inicial; imagens sintéticas pequenas, verticais, escuras e sem nitidez foram
+rejeitadas. A suíte completa terminou com 87 testes aprovados.
+
+**Consequência:** aprovação técnica não confirma presença de bovino, raça,
+corpo inteiro, oclusão, distância nem vista lateral. Essas verificações exigem
+detecção/segmentação e dados da futura coleta piloto de Nelore. A política
+permanece heurística e experimental até essa calibração externa.
+
 ## 2026-08-22 — Empacotar o B2 como inferência experimental verificável
 
 **Decisão:** disponibilizar o B2 como primeiro pacote de inferência local, com
